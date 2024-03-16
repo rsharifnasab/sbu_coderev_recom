@@ -11,13 +11,13 @@ from models import Repo
 urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
 
 _ = DEBUG, INFO, WARN
-logging.basicConfig(level=INFO)
+logging.basicConfig(level=DEBUG)
 log = getLogger("run")
 
 log.debug("importing packages finished without error")
 
 REPO_NAME = "PyGithub/PyGithub"
-PR_COUNT = 5
+PR_COUNT = 50
 
 
 def main():
@@ -28,7 +28,7 @@ def main():
     repo.init()
 
     crawler = Crawler("./data/", repo, pull_count=PR_COUNT)
-    crawler.crawl()
+    crawler.fast_crawl()
 
 
 if __name__ == "__main__":

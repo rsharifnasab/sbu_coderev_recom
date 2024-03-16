@@ -4,6 +4,7 @@ from logging import  getLogger
 from os import environ, path
 from shutil import rmtree
 from subprocess import PIPE, Popen
+import threading
 
 import pandas as pd
 from github import Auth, Github, PullRequest
@@ -25,6 +26,7 @@ class Repo:
         self.gh: Github | None = None
         self.gh_repo: GHRepository.Repository | None = None
         self.local_repo: Repository | None = None
+        self.cloned_lock = threading.Lock()
 
     def git_clone(self):
         os.makedirs(self.cache_dir, exist_ok=True)
@@ -86,10 +88,11 @@ class Repo:
         return list(all_reviewrs)
 
     def get_commit_sha(self, sha):
-        try:
-            return next(Repository(self.cloned_dir, single=sha).traverse_commits())
-        except ValueError:
-            return None
+        with self.cloned_lock:
+            try:
+                return next(Repository(self.cloned_dir, single=sha).traverse_commits())
+            except ValueError:
+                return None
 
     @staticmethod
     def concat(df_base, row_dict):
