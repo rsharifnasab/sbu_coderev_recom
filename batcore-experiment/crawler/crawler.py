@@ -1,9 +1,7 @@
-from itertools import islice
-import logging
 from concurrent.futures import ThreadPoolExecutor, as_completed
 from logging import getLogger
-from os import makedirs, path, stat
-from pprint import pformat, pprint
+from os import makedirs, path
+from pprint import pformat
 
 import pandas as pd
 from models import Repo
@@ -12,11 +10,13 @@ log = getLogger("crawl")
 
 SAVE_EVERY_ITER = 1
 
+THREAD_COUNT = 1
+
 
 class Crawler:
     def __init__(self, save_path: str, repo: Repo, pull_count=10, save_every_iter=5):
         self.save_path = save_path
-        self.pulls_path = path.join(self.save_path, "pull.csv")
+        self.pulls_path = path.join(self.save_path, "pulls.csv")
         self.commits_path = path.join(self.save_path, "commits.csv")
         self.comments_path = path.join(self.save_path, "comments.csv")
 
@@ -48,7 +48,8 @@ class Crawler:
 
         pulls_df["date"] = pulls_df["date"].apply(Crawler.format_date)
         pulls_df["closed"] = pulls_df["closed"].apply(Crawler.format_date)
-        comments_df["key_date"] = comments_df["key_date"].apply(Crawler.format_date)
+        comments_df["key_date"] = comments_df["key_date"].apply(
+            Crawler.format_date)
 
         pulls_df.to_csv(self.pulls_path, **save_params)
         commits_df.to_csv(self.commits_path, **save_params)
@@ -59,9 +60,8 @@ class Crawler:
             log.info("processing %d", pr.id)
 
             modified_files = self.repo.get_commit_modified_files(
-                pr.merge_commit_sha
-            )
-            author_list = self.repo.get_authors(pr)
+                pr.merge_commit_sha)
+            author_list = self.repo.get_pr_authors(pr)
             reviewer = self.repo.get_reviewrs(pr)
 
             new_pulls_row = {
@@ -87,10 +87,10 @@ class Crawler:
                 for changed_file in commit.files:
                     new_commits_row["key_commit"].append(commit.sha)
                     new_commits_row["key_change"].append(pr.id)
-                    new_commits_row["key_file"].append(
-                        changed_file.filename)
+                    new_commits_row["key_file"].append(changed_file.filename)
                     new_commits_row["key_user"].append(
-                        Repo.format_user(commit.committer))
+                        Repo.format_user(commit.committer)
+                    )
                     new_commits_row["date"].append(
                         commit.commit.last_modified_datetime)
 
@@ -116,7 +116,7 @@ class Crawler:
 
         except ValueError as e:
             log.warning(e)
-            return {},{}, {}
+            return {}, {}, {}
 
     def fast_crawl(self):
         assert self.repo.gh_repo is not None
@@ -130,11 +130,14 @@ class Crawler:
 
         pull_iterator = self.repo.pull_iter(self.pull_count)
 
-        with ThreadPoolExecutor(max_workers=10) as executor:
-            futures = [executor.submit(self.fetch_pr_func, url) for url in pull_iterator]
+        with ThreadPoolExecutor(max_workers=THREAD_COUNT) as executor:
+            futures = [
+                executor.submit(self.fetch_pr_func, url) for url in pull_iterator
+            ]
+            # TODO
             iterator = as_completed(futures)
             for i, feature in enumerate(iterator):
-                pull_row,commits_row, comments_row = feature.result()
+                pull_row, commits_row, comments_row = feature.result()
 
                 pulls = Repo.concat(pulls, pull_row)
                 commits = Repo.concat(commits, commits_row)
@@ -144,9 +147,11 @@ class Crawler:
                     rows = len(pulls["date"])
                     log.debug("%d persisting %d rows", i, rows)
                     self.persist(pulls, commits, comments)
+
                     pulls = pulls.iloc[0:0]
                     commits = commits.iloc[0:0]
                     comments = comments.iloc[0:0]
+
                     log.info("saving %d rows successfull", rows)
 
     def crawl(self):
@@ -159,10 +164,6 @@ class Crawler:
         commits = pd.DataFrame()
         comments = pd.DataFrame()
 
-        # for pr_comment in self.repo.gh_repo.get_pulls_review_comments():
-        #    print(pr_comment.url)
-        #    break
-
         for i, pr in enumerate(self.repo.pull_iter(self.pull_count)):
             try:
                 log.info("processing %d", pr.id)
@@ -170,19 +171,17 @@ class Crawler:
                 modified_files = self.repo.get_commit_modified_files(
                     pr.merge_commit_sha
                 )
-                author_list = self.repo.get_authors(pr)
-                reviewer = self.repo.get_reviewrs(pr)
 
                 new_pulls_row = {
                     "key_change": [pr.id],
                     "file": [modified_files],
-                    "reviewer": [reviewer],
+                    "reviewer": [self.repo.get_reviewrs(pr)],
                     "date": [pr.created_at],
                     "owner": [Repo.format_user(pr.user)],
                     "title": [pr.title],
                     "status": [Repo.convert_state(pr.state)],
                     "closed": [pr.closed_at],
-                    "author": [author_list],
+                    "author": [self.repo.get_pr_authors(pr)],
                 }
 
                 new_commits_row = {
@@ -199,9 +198,11 @@ class Crawler:
                         new_commits_row["key_file"].append(
                             changed_file.filename)
                         new_commits_row["key_user"].append(
-                            Repo.format_user(commit.committer))
+                            self.repo.get_commit_author_formatted(commit.sha),
+                        )
                         new_commits_row["date"].append(
-                            commit.commit.last_modified_datetime)
+                            commit.commit.last_modified_datetime
+                        )
 
                 new_comments_row = {
                     "key_change": [],

@@ -1,10 +1,10 @@
 import os
+import threading
 from itertools import islice
-from logging import  getLogger
+from logging import getLogger
 from os import environ, path
 from shutil import rmtree
 from subprocess import PIPE, Popen
-import threading
 
 import pandas as pd
 from github import Auth, Github, PullRequest
@@ -12,6 +12,7 @@ from github import Repository as GHRepository
 from pydriller import Repository
 
 log = getLogger("run")
+
 
 class RepositoryCloneError(Exception):
     pass
@@ -22,7 +23,8 @@ class Repo:
         self.repo_name = repo_name
         self.repo_url = repo_url or f"https://github.com/{repo_name}.git"
         self.cache_dir = cache_dir or "/tmp/cloned_repos"
-        self.cloned_dir = path.join(self.cache_dir, self.repo_name.replace(r"/", "-"))
+        self.cloned_dir = path.join(
+            self.cache_dir, self.repo_name.replace(r"/", "-"))
         self.gh: Github | None = None
         self.gh_repo: GHRepository.Repository | None = None
         self.local_repo: Repository | None = None
@@ -44,12 +46,15 @@ class Repo:
 
             if clone_process.returncode == 0:
                 log.info("cloning to cache successfull")
+                return
+
+            log.warning("cloning failed with exit code %d",
+                        clone_process.returncode)
 
             if os.path.exists(self.cloned_dir):
                 rmtree(self.cloned_dir)
-            raise RepositoryCloneError(
-                f"Error cloning repository: {stderr.decode().strip()}"
-            )
+
+            raise RepositoryCloneError(stderr.decode().strip())
 
     def init(self):
         self.git_clone()
@@ -72,11 +77,25 @@ class Repo:
         log.warning("invalid PR status (%s)", gh_state)
         return "OPEN"
 
-    def get_authors(self, pr: PullRequest.PullRequest):
+    def get_commit_author_formatted(self, commit_sha: str):
+        local_commit = self.get_local_commit_by_sha(commit_sha)
+        assert local_commit is not None
+
+        author = local_commit.author
+
+        # handle web UI problem
+        if not author or not author.email:
+            author = local_commit.committer
+
+        if not author:
+            return ""
+
+        return Repo.format_user(author)
+
+    def get_pr_authors(self, pr: PullRequest.PullRequest):
         all_authors = set()
         for commit in pr.get_commits():
-            user = Repo.format_user(commit.author)
-            all_authors.add(user)
+            all_authors.add(self.get_commit_author_formatted(commit.sha))
 
         return list(all_authors)
 
@@ -87,7 +106,7 @@ class Repo:
 
         return list(all_reviewrs)
 
-    def get_commit_sha(self, sha):
+    def get_local_commit_by_sha(self, sha):
         with self.cloned_lock:
             try:
                 return next(Repository(self.cloned_dir, single=sha).traverse_commits())
@@ -103,7 +122,9 @@ class Repo:
 
     @staticmethod
     def format_user(user):
-        return f"{user.login}:{user.email}:{user.name}"
+        assert user is not None, "user is None"
+        return f"{{{user.name}}}:{{{user.email}}}:{{{user.name}}}"
+        # that should be "{name}:{e-mail}:{login}"
 
     def pull_iter(self, n=None):
         assert self.gh_repo is not None
@@ -112,7 +133,7 @@ class Repo:
         return self.gh_repo.get_pulls(state="all")
 
     def get_commit_modified_files(self, sha) -> list:
-        commit = self.get_commit_sha(sha)
+        commit = self.get_local_commit_by_sha(sha)
         if commit:
             return [mf.new_path or mf.old_path for mf in commit.modified_files]
         return []

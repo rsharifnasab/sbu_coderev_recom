@@ -12,11 +12,18 @@ urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
 
 _ = DEBUG, INFO, WARN
 logging.basicConfig(level=DEBUG)
+
+logging.getLogger("requests").setLevel(logging.WARNING)
+logging.getLogger("urllib3").setLevel(logging.WARNING)
+logging.getLogger("pydriller").setLevel(logging.WARNING)
+logging.getLogger("git").setLevel(logging.WARNING)
+
+
 log = getLogger("run")
 
 log.debug("importing packages finished without error")
 
-REPO_NAME = "PyGithub/PyGithub"
+REPO_NAME = "1995parham/github-do-not-ban-us"
 PR_COUNT = 50
 
 
@@ -28,7 +35,7 @@ def main():
     repo.init()
 
     crawler = Crawler("./data/", repo, pull_count=PR_COUNT)
-    crawler.fast_crawl()
+    crawler.crawl()
 
 
 if __name__ == "__main__":
