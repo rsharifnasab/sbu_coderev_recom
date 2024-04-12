@@ -7,7 +7,7 @@ from shutil import rmtree
 from subprocess import PIPE, Popen
 
 import pandas as pd
-from github import Auth, Github, PullRequest
+from github import Auth, Commit, Github, PullRequest
 from github import Repository as GHRepository
 from pydriller import Repository
 
@@ -77,41 +77,38 @@ class Repo:
         log.warning("invalid PR status (%s)", gh_state)
         return "OPEN"
 
-    def get_commit_author_formatted(self, commit_sha: str):
-        local_commit = self.get_local_commit_by_sha(commit_sha)
-        assert local_commit is not None
+    def get_commit_author_formatted(self, commit: Commit.Commit):
+        local_commit = self.get_local_commit_by_sha(commit.sha)
 
-        author = local_commit.author
+        effective_author = (
+            (local_commit and local_commit.author)
+            or commit.author
+            or (local_commit and local_commit.committer)
+            or commit.committer
+        )
 
-        # handle web UI problem
-        if not author or not author.email:
-            author = local_commit.committer
-
-        if not author:
-            return ""
-
-        return Repo.format_user(author)
+        return Repo.format_user(effective_author)
 
     def get_pr_authors(self, pr: PullRequest.PullRequest):
         all_authors = set()
         for commit in pr.get_commits():
-            all_authors.add(self.get_commit_author_formatted(commit.sha))
+            all_authors.add(self.get_commit_author_formatted(commit))
 
         return list(all_authors)
 
     def get_reviewrs(self, pr: PullRequest.PullRequest):
-        all_reviewrs = set()
+        all_reviewers = set()
         for comment in pr.get_review_comments():
-            all_reviewrs.add(Repo.format_user(comment.user))
+            all_reviewers.add(Repo.format_user(comment.user))
 
-        return list(all_reviewrs)
+        return list(all_reviewers)
 
-    def get_local_commit_by_sha(self, sha):
+    def get_local_commit_by_sha(self, sha: str):
         with self.cloned_lock:
             try:
                 return next(Repository(self.cloned_dir, single=sha).traverse_commits())
-            except ValueError:
-                return None
+            except ValueError as _:
+                log.fatal("cannot find local commit by sha %s", sha)
 
     @staticmethod
     def concat(df_base, row_dict):
@@ -132,8 +129,10 @@ class Repo:
             return islice(self.gh_repo.get_pulls(state="all"), n)
         return self.gh_repo.get_pulls(state="all")
 
-    def get_commit_modified_files(self, sha) -> list:
+    def get_pr_modified_files(self, pr: PullRequest.PullRequest) -> list:
+        sha = pr.merge_commit_sha
+        return self.get_commit_modified_files(sha)
+
+    def get_commit_modified_files(self, sha: str) -> list:
         commit = self.get_local_commit_by_sha(sha)
-        if commit:
-            return [mf.new_path or mf.old_path for mf in commit.modified_files]
-        return []
+        return [mf.new_path or mf.old_path for mf in commit.modified_files]

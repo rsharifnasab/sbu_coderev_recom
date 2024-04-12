@@ -108,9 +108,9 @@ class Crawler:
                     Repo.format_user(comment.user))
                 new_comments_row["key_date"].append(comment.created_at)
 
-            log.debug(pformat(new_pulls_row))
-            log.debug(pformat(new_commits_row))
-            log.debug(pformat(new_comments_row))
+            # log.debug(pformat(new_pulls_row))
+            # log.debug(pformat(new_commits_row))
+            # log.debug(pformat(new_comments_row))
 
             return new_pulls_row, new_commits_row, new_comments_row
 
@@ -166,15 +166,11 @@ class Crawler:
 
         for i, pr in enumerate(self.repo.pull_iter(self.pull_count)):
             try:
-                log.info("processing %d", pr.id)
-
-                modified_files = self.repo.get_commit_modified_files(
-                    pr.merge_commit_sha
-                )
-
+                log.info("processing %s", pr.html_url)
+                log.debug("new pull row")
                 new_pulls_row = {
                     "key_change": [pr.id],
-                    "file": [modified_files],
+                    "file": [self.repo.get_commit_modified_files(pr.merge_commit_sha)],
                     "reviewer": [self.repo.get_reviewrs(pr)],
                     "date": [pr.created_at],
                     "owner": [Repo.format_user(pr.user)],
@@ -184,6 +180,7 @@ class Crawler:
                     "author": [self.repo.get_pr_authors(pr)],
                 }
 
+                log.debug("new commit row")
                 new_commits_row = {
                     "key_commit": [],
                     "key_change": [],
@@ -198,12 +195,13 @@ class Crawler:
                         new_commits_row["key_file"].append(
                             changed_file.filename)
                         new_commits_row["key_user"].append(
-                            self.repo.get_commit_author_formatted(commit.sha),
+                            self.repo.get_commit_author_formatted(commit),
                         )
                         new_commits_row["date"].append(
                             commit.commit.last_modified_datetime
                         )
 
+                log.debug("new comment row")
                 new_comments_row = {
                     "key_change": [],
                     "key_file": [],

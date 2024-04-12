@@ -13,8 +13,8 @@ urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
 _ = DEBUG, INFO, WARN
 logging.basicConfig(level=DEBUG)
 
-logging.getLogger("requests").setLevel(logging.WARNING)
-logging.getLogger("urllib3").setLevel(logging.WARNING)
+logging.getLogger("requests").setLevel(logging.DEBUG)
+logging.getLogger("urllib3").setLevel(logging.DEBUG)
 logging.getLogger("pydriller").setLevel(logging.WARNING)
 logging.getLogger("git").setLevel(logging.WARNING)
 
@@ -24,6 +24,7 @@ log = getLogger("run")
 log.debug("importing packages finished without error")
 
 REPO_NAME = "1995parham/github-do-not-ban-us"
+REPO_NAME = "aradzie/keybr.com"
 PR_COUNT = 50
 
 
