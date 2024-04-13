@@ -18,6 +18,9 @@ logging.getLogger("urllib3").setLevel(logging.DEBUG)
 logging.getLogger("pydriller").setLevel(logging.WARNING)
 logging.getLogger("git").setLevel(logging.WARNING)
 
+logging.getLogger("requests").setLevel(logging.WARN)
+logging.getLogger("urllib3").setLevel(logging.WARN)
+
 
 log = getLogger("run")
 

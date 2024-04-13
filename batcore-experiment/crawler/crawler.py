@@ -170,7 +170,7 @@ class Crawler:
                 log.debug("new pull row")
                 new_pulls_row = {
                     "key_change": [pr.id],
-                    "file": [self.repo.get_commit_modified_files(pr.merge_commit_sha)],
+                    "file": [self.repo.get_pr_modified_files(pr)],
                     "reviewer": [self.repo.get_reviewrs(pr)],
                     "date": [pr.created_at],
                     "owner": [Repo.format_user(pr.user)],
@@ -233,3 +233,4 @@ class Crawler:
                     log.debug("saving successfull")
             except ValueError as e:
                 log.warning(e)
+                raise e  # TODO
