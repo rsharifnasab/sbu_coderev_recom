@@ -48,8 +48,7 @@ class Crawler:
 
         pulls_df["date"] = pulls_df["date"].apply(Crawler.format_date)
         pulls_df["closed"] = pulls_df["closed"].apply(Crawler.format_date)
-        comments_df["key_date"] = comments_df["key_date"].apply(
-            Crawler.format_date)
+        comments_df["date"] = comments_df["date"].apply(Crawler.format_date)
 
         pulls_df.to_csv(self.pulls_path, **save_params)
         commits_df.to_csv(self.commits_path, **save_params)
@@ -57,7 +56,7 @@ class Crawler:
 
     def fetch_pr_func(self, pr):
         try:
-            log.info("processing %d", pr.id)
+            log.info("processing %d", pr.html_url)
 
             modified_files = self.repo.get_commit_modified_files(
                 pr.merge_commit_sha)
@@ -65,7 +64,7 @@ class Crawler:
             reviewer = self.repo.get_reviewrs(pr)
 
             new_pulls_row = {
-                "key_change": [pr.id],
+                "key_change": [pr.number],
                 "file": [modified_files],
                 "reviewer": [reviewer],
                 "date": [pr.created_at],
@@ -86,7 +85,7 @@ class Crawler:
             for commit in pr.get_commits():
                 for changed_file in commit.files:
                     new_commits_row["key_commit"].append(commit.sha)
-                    new_commits_row["key_change"].append(pr.id)
+                    new_commits_row["key_change"].append(pr.number)
                     new_commits_row["key_file"].append(changed_file.filename)
                     new_commits_row["key_user"].append(
                         Repo.format_user(commit.committer)
@@ -98,15 +97,15 @@ class Crawler:
                 "key_change": [],
                 "key_file": [],
                 "key_user": [],
-                "key_date": [],
+                "date": [],
             }
 
             for comment in pr.get_review_comments():
-                new_comments_row["key_change"].append(pr.id)
+                new_comments_row["key_change"].append(int(pr.number))
                 new_comments_row["key_file"].append(comment.path)
                 new_comments_row["key_user"].append(
                     Repo.format_user(comment.user))
-                new_comments_row["key_date"].append(comment.created_at)
+                new_comments_row["date"].append(comment.created_at)
 
             # log.debug(pformat(new_pulls_row))
             # log.debug(pformat(new_commits_row))
@@ -169,11 +168,11 @@ class Crawler:
                 log.info("processing %s", pr.html_url)
                 log.debug("new pull row")
                 new_pulls_row = {
-                    "key_change": [pr.id],
+                    "key_change": [pr.number],
                     "file": [self.repo.get_pr_modified_files(pr)],
                     "reviewer": [self.repo.get_reviewrs(pr)],
                     "date": [pr.created_at],
-                    "owner": [Repo.format_user(pr.user)],
+                    "owner": [[Repo.format_user(pr.user)]],
                     "title": [pr.title],
                     "status": [Repo.convert_state(pr.state)],
                     "closed": [pr.closed_at],
@@ -191,7 +190,7 @@ class Crawler:
                 for commit in pr.get_commits():
                     for changed_file in commit.files:
                         new_commits_row["key_commit"].append(commit.sha)
-                        new_commits_row["key_change"].append(pr.id)
+                        new_commits_row["key_change"].append(pr.number)
                         new_commits_row["key_file"].append(
                             changed_file.filename)
                         new_commits_row["key_user"].append(
@@ -206,19 +205,19 @@ class Crawler:
                     "key_change": [],
                     "key_file": [],
                     "key_user": [],
-                    "key_date": [],
+                    "date": [],
                 }
 
                 for comment in pr.get_review_comments():
-                    new_comments_row["key_change"].append(pr.id)
+                    new_comments_row["key_change"].append(pr.number)
                     new_comments_row["key_file"].append(comment.path)
                     new_comments_row["key_user"].append(
                         Repo.format_user(comment.user))
-                    new_comments_row["key_date"].append(comment.created_at)
+                    new_comments_row["date"].append(comment.created_at)
 
-                log.debug(pformat(new_pulls_row))
-                log.debug(pformat(new_commits_row))
-                log.debug(pformat(new_comments_row))
+                # log.debug(pformat(new_pulls_row))
+                # log.debug(pformat(new_commits_row))
+                # log.debug(pformat(new_comments_row))
 
                 pulls = Repo.concat(pulls, new_pulls_row)
                 commits = Repo.concat(commits, new_commits_row)
