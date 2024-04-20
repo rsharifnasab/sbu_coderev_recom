@@ -1,0 +1,10 @@
+numpy
+scipy
+python-louvain
+pandas
+tqdm
+scikit-learn
+nltk
+levenshtein
+ray
+aliasmatching
