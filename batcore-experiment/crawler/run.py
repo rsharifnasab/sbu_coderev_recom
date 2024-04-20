@@ -28,7 +28,7 @@ log.debug("importing packages finished without error")
 
 REPO_NAME = "1995parham/github-do-not-ban-us"
 REPO_NAME = "aradzie/keybr.com"
-PR_COUNT = 50
+PR_COUNT = 5000
 
 
 def main():

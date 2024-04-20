@@ -50,6 +50,10 @@ class Crawler:
         pulls_df["closed"] = pulls_df["closed"].apply(Crawler.format_date)
         comments_df["date"] = comments_df["date"].apply(Crawler.format_date)
 
+        pulls_df["key_change"] = pulls_df["key_change"].astype(int)
+        commits_df["key_change"] = commits_df["key_change"].astype(int)
+        comments_df["key_change"] = comments_df["key_change"].astype(int)
+
         pulls_df.to_csv(self.pulls_path, **save_params)
         commits_df.to_csv(self.commits_path, **save_params)
         comments_df.to_csv(self.comments_path, **save_params)
