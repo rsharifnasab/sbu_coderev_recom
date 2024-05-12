@@ -23,6 +23,8 @@ DATASET_DIRS = {
 
 MEASURES = ["accuracy", "precision", "recall", "top_k"]
 
+MEASURES = ["acc", "mrr", "rec", "prec", "f1", "top_k"]
+
 
 def result_for_model(model_cls, data_dir):
     data = MRLoaderData(

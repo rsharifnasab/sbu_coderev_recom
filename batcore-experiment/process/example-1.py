@@ -1,7 +1,5 @@
 import pandas as pd
-from tqdm.utils import RE_ANSI
-
-from batcore.baselines import CN, RevRec
+from batcore.baselines import CN
 from batcore.data import MRLoaderData, PullLoader, get_gerrit_dataset
 from batcore.tester import RecTester
 
@@ -10,13 +8,21 @@ pd.options.mode.chained_assignment = None
 if __name__ == "__main__":
 
     print("data loading")
-    data = MRLoaderData().from_checkpoint("../../crawler/data")
+    data = MRLoaderData().from_checkpoint("../crawler/data")
+    # data = MRLoaderData("../../crawler/data", from_checkpoint=True)
 
     print("data set loading")
-    dataset = get_gerrit_dataset(data, max_file=5600, model_cls=RevRec)
+    dataset = get_gerrit_dataset(data, max_file=2, model_cls=CN)
+    # adda pull with max files > max files
 
     print("iterator over data")
-    data_iterator = PullLoader(dataset, 10)
+    data_iterator = PullLoader(dataset, 1)
+
+    for it in data_iterator:
+       print("---->")
+       print(it)
+
+    exit()
 
     print("get item ids")
     dataset.get_items2ids()
@@ -26,7 +32,7 @@ if __name__ == "__main__":
     # optimization of evaluation
 
     print("model loading")
-    model = RevRec(dataset.get_items2ids())
+    model = CN(dataset.get_items2ids())
 
     # create a tester object
     tester = RecTester()
