@@ -1,6 +1,5 @@
 # Experiment with Bat Core
 
-
 ## Gather Dataset
 
 ### Official way: MR-Loader
@@ -20,3 +19,14 @@ docker run \
 + Dataset format is documented [here](https://github.com/JetBrains-Research/MR-loader?tab=readme-ov-file#dataset-format)
 
 ### Customized way: from GitHub
+
+
+
+## install batcore:
+
+```bash
+pyenv venv 3.8 batc
+pyenv activate batc
+pyenv shell batc
+pip install git+https://github.com/JetBrains-Research/batcore
+```
