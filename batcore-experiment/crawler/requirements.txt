@@ -2,3 +2,4 @@ PyGithub
 PyDriller
 python-dotenv
 tqdm
+pandas

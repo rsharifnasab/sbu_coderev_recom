@@ -67,11 +67,11 @@ class Repo:
         log.info("authentication successfull to github")
 
     @staticmethod
-    def convert_state(gh_state):
+    def convert_state(gh_state,is_merged):
         if gh_state == "closed":
+            if is_merged:
+                return "MERGED"
             return "ABANDONED"
-        if gh_state == "merged":
-            return "MERGED"
         if gh_state == "open":
             return "OPEN"
         log.warning("invalid PR status (%s)", gh_state)

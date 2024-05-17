@@ -1,7 +1,6 @@
 from concurrent.futures import ThreadPoolExecutor, as_completed
 from logging import getLogger
 from os import makedirs, path
-from pprint import pformat
 
 import pandas as pd
 from models import Repo
@@ -19,6 +18,10 @@ class Crawler:
         self.pulls_path = path.join(self.save_path, "pulls.csv")
         self.commits_path = path.join(self.save_path, "commits.csv")
         self.comments_path = path.join(self.save_path, "comments.csv")
+
+        self.pulls_len = 0
+        self.commits_len = 0
+        self.comments_len = 0
 
         self.pull_count = pull_count
         self.save_every_iter = save_every_iter
@@ -46,6 +49,14 @@ class Crawler:
             "mode": "a",
         }
 
+        pulls_new_len = len(pulls_df) + self.pulls_len
+        commits_new_len = len(commits_df) + self.commits_len
+        comments_new_len = len(comments_df) + self.comments_len
+
+        pulls_df.insert(0, '', range(self.pulls_len, pulls_new_len))
+        commits_df.insert(0, '', range(self.commits_len, commits_new_len))
+        comments_df.insert(0, '', range(self.comments_len, comments_new_len))
+
         pulls_df["date"] = pulls_df["date"].apply(Crawler.format_date)
         pulls_df["closed"] = pulls_df["closed"].apply(Crawler.format_date)
         comments_df["date"] = comments_df["date"].apply(Crawler.format_date)
@@ -57,6 +68,10 @@ class Crawler:
         pulls_df.to_csv(self.pulls_path, **save_params)
         commits_df.to_csv(self.commits_path, **save_params)
         comments_df.to_csv(self.comments_path, **save_params)
+
+        self.pulls_len = pulls_new_len
+        self.commits_len = commits_new_len
+        self.comments_len = comments_new_len
 
     def fetch_pr_func(self, pr):
         try:
@@ -74,7 +89,7 @@ class Crawler:
                 "date": [pr.created_at],
                 "owner": [Repo.format_user(pr.user)],
                 "title": [pr.title],
-                "status": [Repo.convert_state(pr.state)],
+                "status": [Repo.convert_state(pr.state, pr.merged)],
                 "closed": [pr.closed_at],
                 "author": [author_list],
             }
@@ -167,6 +182,7 @@ class Crawler:
         commits = pd.DataFrame()
         comments = pd.DataFrame()
 
+
         for i, pr in enumerate(self.repo.pull_iter(self.pull_count)):
             try:
                 log.info("processing %s", pr.html_url)
@@ -178,7 +194,7 @@ class Crawler:
                     "date": [pr.created_at],
                     "owner": [[Repo.format_user(pr.user)]],
                     "title": [pr.title],
-                    "status": [Repo.convert_state(pr.state)],
+                    "status": [Repo.convert_state(pr.state, pr.merged)],
                     "closed": [pr.closed_at],
                     "author": [self.repo.get_pr_authors(pr)],
                 }
