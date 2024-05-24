@@ -18,3 +18,5 @@ pyenv virtualenv 3.8 batc
 pyenv shell batc
 #pyenv activate batc
 uv pip install -r ./requirements.txt
+
+uv pip install git+https://github.com/JetBrains-Research/batcore
