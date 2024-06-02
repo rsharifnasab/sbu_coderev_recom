@@ -10,11 +10,11 @@ class SimpleRecommender(RecommenderBase):
         self.reviewers = []
 
     def predict(self, pull, n=10):
-        pprint(f"predicting for pull: {pull}")
-        return [np.random.choice(self.reviewers)]
+        # pprint(f"predicting for pull: {pull}")
+        return [np.random.choice(self.reviewers) for _ in range(n)]
 
     def fit(self, data):
-        print("fitting")
+        # print("fitting")
         for event in data:
-            pprint(f"fitting event: {event}")
-            self.reviewers.extend(event['reviewer'])
+            # pprint(f"fitting event: {event}")
+            self.reviewers.extend(event["reviewer"])
