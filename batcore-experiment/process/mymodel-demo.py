@@ -1,4 +1,5 @@
 import pandas as pd
+from batcore.baselines import CN, cHRev
 from batcore.data import MRLoaderData, PullLoader, get_gerrit_dataset
 from batcore.tester import RecTester
 
@@ -9,14 +10,12 @@ pd.options.mode.chained_assignment = None
 
 if __name__ == "__main__":
     print("data loading")
-    data = MRLoaderData(
-        path="/home/roozbeh/Desktop/batcore-data-email/dataset/gerrit-review.googlesource.com",
-    )
+    data = MRLoaderData(path="../data/")
     # data = MRLoaderData().from_checkpoint("../crawler/data")
 
     print("data set loading")
     dataset = get_gerrit_dataset(
-        data, max_file=20, model_cls=SimpleRecommender, owner_policy="author_no_na"
+        data, max_file=20, model_cls=cHRev, owner_policy="author_no_na"
     )
     # adda pull with max files > max files
 
@@ -41,14 +40,17 @@ if __name__ == "__main__":
     # optimization of evaluation
 
     print("model loading")
-    model = SimpleRecommender()
+    model = cHRev()  # dataset.get_items2ids())
 
+    print("rec tester instance")
     # create a tester object
     tester = RecTester()
 
+    print("rec tester: test")
     # run the tester and receive dict with all the metrics
     res = tester.test_recommender(model, data_iterator)
 
     from pprint import pprint
 
+    print("result:")
     pprint(res)
