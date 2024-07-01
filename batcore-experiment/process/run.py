@@ -9,7 +9,7 @@ import plotly.io as pio
 from batcore.baselines import CN, WRC, ACRec, RevFinder, RevRec, Tie, cHRev, xFinder
 from batcore.data import MRLoaderData, PullLoader, get_gerrit_dataset
 from batcore.tester import RecTester
-from naive1 import Naive
+from naive1 import MostActiveRev, RandomRec, RandomWeightedRec
 from plotly.subplots import make_subplots
 
 pd.options.mode.chained_assignment = None
@@ -37,14 +37,14 @@ MEASURES_ALL = [
     "f1@3",
     "f1@5",
     "f1@10",
-    # "top_k",
 ]
 
 MEASURES = [
-    "acc@5",
-    "rec@5",
-    "prec@5",
-    "f1@10",
+    "mrr",
+    "acc@1",
+    "rec@1",
+    "prec@1",
+    "f1@1",
     # "time",
 ]
 
@@ -187,20 +187,22 @@ def main(models, dataset_names, dataset_dir):
 if __name__ == "__main__":
     main(
         models=[
-            # ("chrev", cHRev, lambda _: cHRev()),
-            # ("acrec", ACRec, lambda _: ACRec()),
-            # ("revfinder", RevFinder, lambda ds: RevFinder(ds.get_items2ids())),
-            # ("xfinder", xFinder, lambda _: xFinder()),
-            # ("tie", Tie, lambda ds: Tie(ds.get_items2ids())),  # should be item list?
+            ("chrev", cHRev, lambda _: cHRev()),
+            ("acrec", ACRec, lambda _: ACRec()),
+            ("tie", Tie, lambda ds: Tie(ds.get_items2ids())),  # should be item list?
+            ("revfinder", RevFinder, lambda ds: RevFinder(ds.get_items2ids())),
             #######
+            # ("xfinder", xFinder, lambda _: xFinder()),
             # ("revrec", RevRec, lambda ds: RevRec(ds.get_items2ids())),
             # ("cn", CN, lambda ds: CN(ds.get_items2ids())),
             # ("wrc", WRC, lambda ds: WRC(ds.get_items2ids())),
-            ("naive1", Naive, lambda _: Naive()),
+            ("naive_rand", RandomRec, lambda _: RandomRec()),
+            ("naive_wrand", RandomWeightedRec, lambda _: RandomWeightedRec()),
+            ("naive_freq", MostActiveRev, lambda _: MostActiveRev()),
         ],
         dataset_names=[
-            "aws",
-            "bazlets",
+            # "aws",
+            # "bazlets",
             "k8s",
         ],
         dataset_dir="../data-combined/",
