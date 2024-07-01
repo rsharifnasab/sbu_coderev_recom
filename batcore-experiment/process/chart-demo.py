@@ -1,25 +1,20 @@
 import logging
+from hashlib import md5
 from pprint import pprint
 
-import matplotlib.pyplot as plt
-import numpy as np
 import pandas as pd
-import seaborn as sns
-from batcore.baselines import CN, WRC, ACRec, RevRec, Tie, cHRev
+import plotly.graph_objects as go
+import plotly.io as pio
+from batcore.baselines import CN, WRC, ACRec, RevFinder, RevRec, Tie, cHRev, xFinder
 from batcore.data import MRLoaderData, PullLoader, get_gerrit_dataset
 from batcore.tester import RecTester
+from plotly.subplots import make_subplots
 
 pd.options.mode.chained_assignment = None
 
+logging.basicConfig(level=logging.WARN)
 
-logging.basicConfig(level=logging.INFO)
-
-PRINT_DATA = False
-
-DATASET_DIRS = {
-    "aws": "../data",
-    "batzel": "../data2",
-}
+pio.templates.default = "plotly_white"
 
 MEASURES_ALL = [
     "mrr",
@@ -49,36 +44,33 @@ MEASURES = [
     "f1@10",
 ]
 
+assert set(MEASURES).issubset(set(MEASURES_ALL))
+
 
 INVESTIGATE_RES_2 = False
+BATC_LOG_FILE = "/tmp/batcore_logs"
 
 
 def run_model(model_constructor, model_cls, data_dir):
     data = MRLoaderData(
         data_dir,
-        verbose=True,
-        log_stdout=True,
-    )  # .from_checkpoint(data_dir)
+        verbose=False,
+        log_file_path=BATC_LOG_FILE,
+    )
 
-    print("data set loading")
+    print("loading gerrit dataset")
     dataset = get_gerrit_dataset(
         data, max_file=20, model_cls=model_cls, owner_policy="author_no_na"
     )
 
-    print("iterator over data")
     data_iterator = PullLoader(dataset)
 
-    print("model loading")
     model = model_constructor(dataset)
 
-    print("creating a rec tester object")
     tester = RecTester()
 
     print("running the tester over data iterator")
     res = tester.test_recommender(model, data_iterator)
-
-    # print("res 0 : ")
-    # pprint(res[0])
 
     if INVESTIGATE_RES_2:
         print("res 1 : ")
@@ -88,21 +80,21 @@ def run_model(model_constructor, model_cls, data_dir):
     return res[0]
 
 
-def prepare_data(models, dataset_names):
+def prepare_data(models, dataset_names, datasets_dir):
     res_map = {}
     for dataset_name in dataset_names:
-        dataset_dir = DATASET_DIRS[dataset_name]
         res_ds_map = {}
         res_map[dataset_name] = res_ds_map
         for model_name, model_cls, model_constructor in models:
+            print(f"--------- {dataset_name} -> {model_name} ---------")
             res_ds_map[model_name] = run_model(
-                model_constructor, model_cls, dataset_dir
+                model_constructor,
+                model_cls,
+                datasets_dir + dataset_name,
             )
             # each item: (score, error)
 
-    # pprint(res_map)
-
-    # Create a DataFrame for the data
+    print("------- aggregating data ---------")
     data = []
     for ds in dataset_names:
         for model_name, _, _ in models:
@@ -115,96 +107,48 @@ def prepare_data(models, dataset_names):
 
             data.append(ds_model)
 
-    # pprint(data)
-
     df = pd.DataFrame(data, columns=["Model", "Dataset"] + MEASURES)
-    # print(df.head())
-
     return df
 
 
-def plot_df_1(df):
-    for measure in MEASURES:
-        # Create the bar chart using Seaborn
-        plt.figure(figsize=(10, 6))
-        sns.barplot(x="Dataset", y=measure, hue="Model", data=df)
-        plt.title("Recommender Models Metrics - " + measure)
-        plt.xlabel("Datasets")
-        plt.ylabel(measure)
-        plt.legend(title="Models")
-        plt.show()
-
-
-import plotly.express as px
-import plotly.io as pio
-
-# Set the default template for better aesthetics
-pio.templates.default = "plotly_white"
-
-
-def plot_df_2(df):
-    for measure in MEASURES:
-        fig = px.bar(
-            df,
-            x="Dataset",
-            y=measure,
-            color="Model",
-            barmode="group",
-            title=f"Recommender Models Metrics - {measure}",
-            labels={"Dataset": "Datasets", measure: measure},
-            height=600,
-            width=1000,
-        )
-
-        # Customize the layout
-        fig.update_layout(
-            legend_title_text="Models",
-            xaxis_title="Datasets",
-            yaxis_title=measure,
-            font=dict(size=14),
-            title_font=dict(size=20),
-            legend=dict(font=dict(size=12)),
-            hoverlabel=dict(font_size=14),
-        )
-
-        # Show the plot
-        fig.show()
+def get_color(model_name):
+    color_list = [
+        "red",
+        "blue",
+        "green",
+        "yellow",
+        "purple",
+        "orange",
+        "pink",
+        "cyan",
+        "magenta",
+        "brown",
+    ]
+    hash_value = md5(model_name.encode()).hexdigest()
+    color_index = int(hash_value, 16) % len(color_list)
+    return color_list[color_index]
 
 
 def plot_df(df):
-    import plotly.graph_objects as go
-    from plotly.subplots import make_subplots
-
-    # Assuming df is your DataFrame and MEASURES is your list of measures
-    # Create a subplot with a single plot
     fig = make_subplots(rows=1, cols=1)
 
-    # Define a color map for the models
-    color_map = {
-        "chrev": "blue",
-        "chrev2": "red",
-        "Model3": "green",
-        "Model4": "orange",
-    }
-
-    # Iterate through each model
     for model in df["Model"].unique():
         model_data = df[df["Model"] == model]
 
-        # For each measure, create a trace
+        # For each measure/model, create a trace
         for i, measure in enumerate(MEASURES):
             fig.add_trace(
                 go.Bar(
                     x=[f"{dataset}<br>{measure}" for dataset in model_data["Dataset"]],
                     y=model_data[measure],
-                    name=model,  # f"{model} - {measure}",
-                    marker_color=color_map[model],
-                    opacity=0.6 + 0.1 * i,  # Varying opacity for different measures
+                    name=model,
+                    marker_color=get_color(model),
+                    opacity=0.7,
                     showlegend=i == 0,  # Only show legend for the first measure
+                    legendgroup=model,  # Group traces by model
                 )
             )
 
-    # Update layout
     fig.update_layout(
         title="Recommender Models Metrics Comparison",
         xaxis_title="Dataset and Measure",
@@ -214,14 +158,17 @@ def plot_df(df):
         width=1200,
         legend_title="Models",
         font=dict(size=12),
+        yaxis=dict(range=[0, 1]),  # Set y-axis range from 0 to 1
+        legend=dict(
+            groupclick="toggleitem"  # This enables filtering when clicking on legend items
+        ),
     )
 
-    # Show the plot
     fig.show()
 
 
-def main(models, dataset_names):
-    df = prepare_data(models, dataset_names)
+def main(models, dataset_names, dataset_dir):
+    df = prepare_data(models, dataset_names, dataset_dir)
 
     print(df.head())
     plot_df(df)
@@ -229,10 +176,20 @@ def main(models, dataset_names):
 
 if __name__ == "__main__":
     main(
-        [
-            ("chrev", cHRev, lambda ds: cHRev()),
-            ("chrev2", cHRev, lambda ds: cHRev()),
-            #     ("cn", CN, lambda ds: CN(ds.get_items2ids())),
+        models=[
+            ("chrev", cHRev, lambda _: cHRev()),
+            ("acrec", ACRec, lambda _: ACRec()),
+            ("revfinder", RevFinder, lambda ds: RevFinder(ds.get_items2ids())),
+            ("xfinder", xFinder, lambda _: xFinder()),
+            ("tie", Tie, lambda ds: Tie(ds.get_items2ids())),  # should be item list?
+            # ("revrec", RevRec, lambda ds: RevRec(ds.get_items2ids())),
+            # ("cn", CN, lambda ds: CN(ds.get_items2ids())),
+            # ("wrc", WRC, lambda ds: WRC(ds.get_items2ids())),
         ],
-        ["aws", "batzel"],
+        dataset_names=[
+            "aws",
+            "bazlets",
+            #    "k8s",
+        ],
+        dataset_dir="../data-combined/",
     )
