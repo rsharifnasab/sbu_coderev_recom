@@ -1,4 +1,5 @@
 import logging
+import time
 from hashlib import md5
 from pprint import pprint
 
@@ -8,6 +9,7 @@ import plotly.io as pio
 from batcore.baselines import CN, WRC, ACRec, RevFinder, RevRec, Tie, cHRev, xFinder
 from batcore.data import MRLoaderData, PullLoader, get_gerrit_dataset
 from batcore.tester import RecTester
+from naive1 import Naive
 from plotly.subplots import make_subplots
 
 pd.options.mode.chained_assignment = None
@@ -17,6 +19,7 @@ logging.basicConfig(level=logging.WARN)
 pio.templates.default = "plotly_white"
 
 MEASURES_ALL = [
+    "time",
     "mrr",
     "acc@1",
     "acc@3",
@@ -42,6 +45,7 @@ MEASURES = [
     "rec@5",
     "prec@5",
     "f1@10",
+    # "time",
 ]
 
 assert set(MEASURES).issubset(set(MEASURES_ALL))
@@ -52,6 +56,8 @@ BATC_LOG_FILE = "/tmp/batcore_logs"
 
 
 def run_model(model_constructor, model_cls, data_dir):
+    start_time = time.time()
+
     data = MRLoaderData(
         data_dir,
         verbose=False,
@@ -71,6 +77,9 @@ def run_model(model_constructor, model_cls, data_dir):
 
     print("running the tester over data iterator")
     res = tester.test_recommender(model, data_iterator)
+
+    execution_time = time.time() - start_time
+    res[0]["time"] = (execution_time, 0)
 
     if INVESTIGATE_RES_2:
         print("res 1 : ")
@@ -158,10 +167,11 @@ def plot_df(df):
         width=1200,
         legend_title="Models",
         font=dict(size=12),
-        yaxis=dict(range=[0, 1]),  # Set y-axis range from 0 to 1
         legend=dict(
             groupclick="toggleitem"  # This enables filtering when clicking on legend items
         ),
+        xaxis=dict(tickangle=-45),  # Rotate x-axis labels for better readability
+        yaxis=dict(range=[0, 1]),  # Set y-axis range from 0 to 1
     )
 
     fig.show()
@@ -177,19 +187,21 @@ def main(models, dataset_names, dataset_dir):
 if __name__ == "__main__":
     main(
         models=[
-            ("chrev", cHRev, lambda _: cHRev()),
-            ("acrec", ACRec, lambda _: ACRec()),
-            ("revfinder", RevFinder, lambda ds: RevFinder(ds.get_items2ids())),
-            ("xfinder", xFinder, lambda _: xFinder()),
-            ("tie", Tie, lambda ds: Tie(ds.get_items2ids())),  # should be item list?
+            # ("chrev", cHRev, lambda _: cHRev()),
+            # ("acrec", ACRec, lambda _: ACRec()),
+            # ("revfinder", RevFinder, lambda ds: RevFinder(ds.get_items2ids())),
+            # ("xfinder", xFinder, lambda _: xFinder()),
+            # ("tie", Tie, lambda ds: Tie(ds.get_items2ids())),  # should be item list?
+            #######
             # ("revrec", RevRec, lambda ds: RevRec(ds.get_items2ids())),
             # ("cn", CN, lambda ds: CN(ds.get_items2ids())),
             # ("wrc", WRC, lambda ds: WRC(ds.get_items2ids())),
+            ("naive1", Naive, lambda _: Naive()),
         ],
         dataset_names=[
             "aws",
             "bazlets",
-            #    "k8s",
+            "k8s",
         ],
         dataset_dir="../data-combined/",
     )
