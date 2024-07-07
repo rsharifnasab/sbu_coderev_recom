@@ -187,18 +187,20 @@ def main(models, dataset_names, dataset_dir):
 if __name__ == "__main__":
     main(
         models=[
-            ("chrev", cHRev, lambda _: cHRev()),
-            ("acrec", ACRec, lambda _: ACRec()),
-            ("tie", Tie, lambda ds: Tie(ds.get_items2ids())),  # should be item list?
-            ("revfinder", RevFinder, lambda ds: RevFinder(ds.get_items2ids())),
-            #######
+            # ("chrev", cHRev, lambda _: cHRev()),
+            # ("acrec", ACRec, lambda _: ACRec()),
+            # ("tie", Tie, lambda ds: Tie(ds.get_items2ids())),  # should be item list?
+            # ("revfinder", RevFinder, lambda ds: RevFinder(ds.get_items2ids())),
+            ####
             # ("xfinder", xFinder, lambda _: xFinder()),
+            ####
             # ("revrec", RevRec, lambda ds: RevRec(ds.get_items2ids())),
             # ("cn", CN, lambda ds: CN(ds.get_items2ids())),
             # ("wrc", WRC, lambda ds: WRC(ds.get_items2ids())),
-            ("naive_rand", RandomRec, lambda _: RandomRec()),
-            ("naive_wrand", RandomWeightedRec, lambda _: RandomWeightedRec()),
-            ("naive_freq", MostActiveRev, lambda _: MostActiveRev()),
+            ####
+            # ("naive_rand", RandomRec, lambda _: RandomRec()),
+            # ("naive_wrand", RandomWeightedRec, lambda _: RandomWeightedRec()),
+            # ("naive_freq", MostActiveRev, lambda _: MostActiveRev()),
         ],
         dataset_names=[
             # "aws",
