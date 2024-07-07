@@ -195,12 +195,12 @@ if __name__ == "__main__":
             # ("xfinder", xFinder, lambda _: xFinder()),
             ####
             # ("revrec", RevRec, lambda ds: RevRec(ds.get_items2ids())),
-            # ("cn", CN, lambda ds: CN(ds.get_items2ids())),
+            ("cn", CN, lambda ds: CN(ds.get_items2ids())),
             # ("wrc", WRC, lambda ds: WRC(ds.get_items2ids())),
             ####
             # ("naive_rand", RandomRec, lambda _: RandomRec()),
-            # ("naive_wrand", RandomWeightedRec, lambda _: RandomWeightedRec()),
-            # ("naive_freq", MostActiveRev, lambda _: MostActiveRev()),
+            ("naive_wrand", RandomWeightedRec, lambda _: RandomWeightedRec()),
+            ("naive_freq", MostActiveRev, lambda _: MostActiveRev()),
         ],
         dataset_names=[
             # "aws",
