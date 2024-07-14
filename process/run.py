@@ -11,6 +11,7 @@ from batcore.data import MRLoaderData, PullLoader, get_gerrit_dataset
 from batcore.tester import RecTester
 from naive1 import MostActiveRev, RandomRec, RandomWeightedRec
 from plotly.subplots import make_subplots
+from thesis import Thesis1
 
 pd.options.mode.chained_assignment = None
 
@@ -195,12 +196,14 @@ if __name__ == "__main__":
             # ("xfinder", xFinder, lambda _: xFinder()),
             ####
             # ("revrec", RevRec, lambda ds: RevRec(ds.get_items2ids())),
-            ("cn", CN, lambda ds: CN(ds.get_items2ids())),
+            # ("cn", CN, lambda ds: CN(ds.get_items2ids())),
             # ("wrc", WRC, lambda ds: WRC(ds.get_items2ids())),
             ####
             # ("naive_rand", RandomRec, lambda _: RandomRec()),
             ("naive_wrand", RandomWeightedRec, lambda _: RandomWeightedRec()),
             ("naive_freq", MostActiveRev, lambda _: MostActiveRev()),
+            ####
+            ("thesis", Thesis1, lambda _: Thesis1()),
         ],
         dataset_names=[
             # "aws",

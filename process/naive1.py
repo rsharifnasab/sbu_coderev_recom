@@ -1,14 +1,6 @@
-from collections import Counter
-from pprint import pprint
-
 import numpy as np
 from batcore.modelbase import RecommenderBase
-
-
-def sort_by_frequency(input_list, n):
-    count = Counter(input_list)
-    sorted_items = sorted(count.items(), key=lambda x: (-x[1], x[0]))
-    return [item for item, _ in sorted_items[:n]]
+from utils import sort_by_frequency
 
 
 class MostActiveRev(RecommenderBase):
@@ -16,7 +8,7 @@ class MostActiveRev(RecommenderBase):
         super().__init__()
         self.reviewers = []
 
-    def predict(self, pull, n=10):
+    def predict(self, pull, n=10):  # pyright: ignore [reportIncompatibleMethodOverride]
         return sort_by_frequency(self.reviewers, n)
 
     def fit(self, data):
@@ -29,7 +21,7 @@ class RandomWeightedRec(RecommenderBase):
         super().__init__()
         self.reviewers = []
 
-    def predict(self, pull, n=10):
+    def predict(self, pull, n=10):  # pyright: ignore [reportIncompatibleMethodOverride]
         return [np.random.choice(self.reviewers) for _ in range(n)]
 
     def fit(self, data):
@@ -42,7 +34,7 @@ class RandomRec(RecommenderBase):
         super().__init__()
         self.reviewers = set()
 
-    def predict(self, pull, n=10):
+    def predict(self, pull, n=10):  # pyright: ignore [reportIncompatibleMethodOverride]
         reviewer_list = list(self.reviewers)
         return [np.random.choice(reviewer_list) for _ in range(n)]
 
