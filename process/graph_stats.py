@@ -175,22 +175,47 @@ class GraphStats:
         result = nx.betweenness_centrality(self.undirected, k=k_samples)
         return self.str_top5(result)
 
-    def plot_degree_distribution(self, save_dir):
+    def plot_degree_distribution(self, save_dir, loglog_threshold=100):
         degree_freq = nx.degree_histogram(self.undirected)
         degrees = range(len(degree_freq))
+
+        # Filter out zero values
+        non_zero_degrees = [d for d in degrees[1:] if degree_freq[d] > 0]
+        non_zero_freq = [f for f in degree_freq[1:] if f > 0]
+
         plt.figure(figsize=(12, 8))
-        plt.loglog(degrees[1:], degree_freq[1:], "bo-")
-        plt.xlabel("Degree")
-        plt.ylabel("Frequency")
-        plt.title(self.name)
+
+        # Determine if we should use loglog scale
+        use_loglog = max(non_zero_degrees) >= loglog_threshold
+
+        if use_loglog:
+            plt.loglog(non_zero_degrees, non_zero_freq, "bo-", markersize=4, linewidth=1)
+            plt.xscale('log')
+            plt.yscale('log')
+            plt.xlabel("Degree (log scale)")
+            plt.ylabel("Frequency (log scale)")
+            plt.xticks([1, 10, 100, 1000], ["1", "10", "100", "1000"])
+            plt.yticks([1, 10, 100, "1000"])
+        else:
+            plt.plot(non_zero_degrees, non_zero_freq, "bo-", markersize=4, linewidth=1)
+            plt.xlabel("Degree")
+            plt.ylabel("Frequency")
+
+        plt.title(f"Degree Distribution of {self.name}")
+        plt.grid(True, which="both", ls="-", alpha=0.2)
+
         addr = f"{save_dir}/{self.name}.png"
-        plt.savefig(addr)
+        plt.savefig(addr, dpi=300, bbox_inches='tight')
+        plt.close()
+
         return addr
 
     def draw_graph(self, save_dir):
+        addr = f"{save_dir}/{self.name}.html"
         net = Network(notebook=True, cdn_resources="in_line")
         net.from_nx(self.G)
-        net.show(save_dir + '/graph.html', )
+        net.save_graph(addr)
+        return addr
 
 
     def __str__(self):
