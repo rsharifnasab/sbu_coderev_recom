@@ -1,10 +1,9 @@
 import pandas as pd
-from batcore.baselines import CN, cHRev
+from batcore.baselines import cHRev
 from batcore.data import MRLoaderData, PullLoader, get_gerrit_dataset
 from batcore.tester import RecTester
 
 # from .mymodel import SimpleRecommender
-from mymodel import SimpleRecommender
 
 pd.options.mode.chained_assignment = None
 

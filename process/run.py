@@ -6,10 +6,9 @@ from pprint import pprint
 import pandas as pd
 import plotly.graph_objects as go
 import plotly.io as pio
-from batcore.baselines import CN, WRC, ACRec, RevFinder, RevRec, Tie, cHRev, xFinder
 from batcore.data import MRLoaderData, PullLoader, get_gerrit_dataset
 from batcore.tester import RecTester
-from naive1 import MostActiveRev, RandomRec, RandomWeightedRec
+from naive1 import MostActiveRev, RandomWeightedRec
 from plotly.subplots import make_subplots
 from thesis import Thesis1
 
@@ -167,12 +166,12 @@ def plot_df(df):
         height=600,
         width=1200,
         legend_title="Models",
-        font=dict(size=12),
-        legend=dict(
-            groupclick="toggleitem"  # This enables filtering when clicking on legend items
-        ),
-        xaxis=dict(tickangle=-45),  # Rotate x-axis labels for better readability
-        yaxis=dict(range=[0, 1]),  # Set y-axis range from 0 to 1
+        font={"size": 12},
+        legend={
+            "groupclick": "toggleitem"  # This enables filtering when clicking on legend items
+        },
+        xaxis={"tickangle": -45},  # Rotate x-axis labels for better readability
+        yaxis={"range": [0, 1]},  # Set y-axis range from 0 to 1
     )
 
     fig.show()

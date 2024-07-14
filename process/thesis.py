@@ -1,11 +1,10 @@
 from pprint import pprint
 
 import networkx as nx
-import numpy as np
 from batcore.modelbase import RecommenderBase
-from utils import Timestamp, sort_by_frequency
+from utils import Timestamp
+from graph_stats import GraphStats, print_summary
 
-_ = np
 
 
 class Thesis1(RecommenderBase):
@@ -14,12 +13,39 @@ class Thesis1(RecommenderBase):
         self.reviewers = []
         self.G = nx.Graph()
 
-    # pyright: ignore [reportIncompatibleMethodOverride]
-    def predict(self, pull, n=10):  # type: ignore
+    def predict(self, pull, n=10):  # pyright: ignore [reportIncompatibleMethodOverride]
         pprint(pull)
+        print("=------------------------=")
+
+        ret = GraphStats(
+            name="author-reviewer",
+            G=self.G,
+            slow=True,
+        ).summary_generator(
+            funcs= [
+                "avg degree",
+                "density",
+                "diameter",
+                "effective diameter",
+                "avg clustering coeff",
+                "transitivity",
+                "avg shortest path len",
+                "assortativity",
+                #"betweenness centrality",
+                #"pagerank centrality",
+                #"degree centrality",
+                #"closeness centrality"
+                "plot degree distribution",
+                "draw graph",
+            ],
+            save_path=".",
+        )
+        print_summary(ret)
+
+
         assert False
 
-    def connect(self, author, reviewer):
+    def author_reviewer_connect(self, author, reviewer):
         self.G.add_edge(author, reviewer)
 
     def fit(self, data):
@@ -32,7 +58,7 @@ class Thesis1(RecommenderBase):
 
             for rev in reviewers:
                 for aut in authors:
-                    self.connect(aut, rev)
+                    self.author_reviewer_connect(aut, rev)
 
 
 _ = {
