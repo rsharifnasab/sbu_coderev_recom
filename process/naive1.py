@@ -22,7 +22,7 @@ class RandomWeightedRec(RecommenderBase):
         self.reviewers = []
 
     def predict(self, pull, n=10):  # pyright: ignore [reportIncompatibleMethodOverride]
-        return [np.random.choice(self.reviewers) for _ in range(n)]
+        return list(set(np.random.choice(self.reviewers) for _ in range(n)))
 
     def fit(self, data):
         for event in data:
@@ -36,7 +36,7 @@ class RandomRec(RecommenderBase):
 
     def predict(self, pull, n=10):  # pyright: ignore [reportIncompatibleMethodOverride]
         reviewer_list = list(self.reviewers)
-        return [np.random.choice(reviewer_list) for _ in range(n)]
+        return list(set(np.random.choice(reviewer_list) for _ in range(n)))
 
     def fit(self, data):
         for event in data:

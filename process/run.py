@@ -8,7 +8,7 @@ import plotly.graph_objects as go
 import plotly.io as pio
 from batcore.data import MRLoaderData, PullLoader, get_gerrit_dataset
 from batcore.tester import RecTester
-from naive1 import MostActiveRev, RandomWeightedRec
+from naive1 import MostActiveRev, RandomRec, RandomWeightedRec
 from plotly.subplots import make_subplots
 from thesis import Thesis1
 
@@ -40,11 +40,11 @@ MEASURES_ALL = [
 ]
 
 MEASURES = [
-    "mrr",
-    "acc@1",
-    "rec@1",
-    "prec@1",
-    "f1@1",
+    # "mrr",
+    "acc@3",
+    "rec@3",
+    "prec@3",
+    "f1@3",
     # "time",
 ]
 
@@ -198,15 +198,15 @@ if __name__ == "__main__":
             # ("cn", CN, lambda ds: CN(ds.get_items2ids())),
             # ("wrc", WRC, lambda ds: WRC(ds.get_items2ids())),
             ####
-            # ("naive_rand", RandomRec, lambda _: RandomRec()),
+            ("naive_rand", RandomRec, lambda _: RandomRec()),
             ("naive_wrand", RandomWeightedRec, lambda _: RandomWeightedRec()),
             ("naive_freq", MostActiveRev, lambda _: MostActiveRev()),
             ####
             ("thesis", Thesis1, lambda _: Thesis1()),
         ],
         dataset_names=[
-            # "aws",
-            # "bazlets",
+            "aws",
+            "bazlets",
             "k8s",
         ],
         dataset_dir="../data-combined/",

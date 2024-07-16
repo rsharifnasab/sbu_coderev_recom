@@ -1,10 +1,10 @@
 from pprint import pprint
 
 import networkx as nx
+import numpy as np
 from batcore.modelbase import RecommenderBase
-from utils import Timestamp
 from graph_stats import GraphStats, print_summary
-
+from utils import Timestamp, sort_by_frequency
 
 
 class Thesis1(RecommenderBase):
@@ -13,16 +13,13 @@ class Thesis1(RecommenderBase):
         self.reviewers = []
         self.G = nx.Graph()
 
-    def predict(self, pull, n=10):  # pyright: ignore [reportIncompatibleMethodOverride]
-        pprint(pull)
-        print("=------------------------=")
-
+    def graph_demo(self):
         ret = GraphStats(
             name="author-reviewer",
             G=self.G,
             slow=True,
         ).summary_generator(
-            funcs= [
+            funcs=[
                 "avg degree",
                 "density",
                 "diameter",
@@ -31,10 +28,10 @@ class Thesis1(RecommenderBase):
                 "transitivity",
                 "avg shortest path len",
                 "assortativity",
-                #"betweenness centrality",
-                #"pagerank centrality",
-                #"degree centrality",
-                #"closeness centrality"
+                # "betweenness centrality",
+                # "pagerank centrality",
+                # "degree centrality",
+                # "closeness centrality"
                 "plot degree distribution",
                 "draw graph",
             ],
@@ -42,11 +39,33 @@ class Thesis1(RecommenderBase):
         )
         print_summary(ret)
 
+    def predict(self, pull, n=10):  # pyright: ignore [reportIncompatibleMethodOverride]
+        # return list(set(np.random.choice(self.reviewers) for _ in range(n)))
 
-        assert False
+        owner = list(pull["owner"])[0]
+        connected_edges = list(self.G.edges(owner))
+
+        ans = connected_edges[:1]  # TODO: [:n]
+        if len(connected_edges) < n:
+            ans.extend(
+                sort_by_frequency(
+                    self.reviewers,
+                    n - len(ans),
+                )
+            )
+
+        # pprint(pull)
+        # pprint(connected_edges)
+        # self.graph_demo()
+
+        return ans
 
     def author_reviewer_connect(self, author, reviewer):
-        self.G.add_edge(author, reviewer)
+        if self.G.has_edge(author, reviewer):
+            current_value = self.G.edges[author, reviewer]["value"]
+            self.G.edges[author, reviewer]["value"] = current_value + 1
+        else:
+            self.G.add_edge(author, reviewer, value=1)
 
     def fit(self, data):
         for event in data:
@@ -56,6 +75,7 @@ class Thesis1(RecommenderBase):
 
             reviewers = event["reviewer"]
 
+            self.reviewers.extend(reviewers)
             for rev in reviewers:
                 for aut in authors:
                     self.author_reviewer_connect(aut, rev)
