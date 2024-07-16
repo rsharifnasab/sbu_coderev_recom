@@ -20,6 +20,7 @@ from batcore.data import (
     xFinder,
 )
 from batcore.tester import RecTester
+from data_stats import df_stats
 from naive1 import MostActiveRev, RandomRec, RandomWeightedRec
 from plotly.subplots import make_subplots
 from thesis import Thesis1
@@ -85,7 +86,6 @@ def run_model(model_constructor, model_cls, data_dir):
         log_file_path=BATC_LOG_FILE,
     )
 
-    print("loading gerrit dataset")
     dataset = get_gerrit_dataset(
         data, max_file=20, model_cls=model_cls, owner_policy="author_no_na"
     )
@@ -110,7 +110,7 @@ def run_model(model_constructor, model_cls, data_dir):
     return res[0]
 
 
-def prepare_data(models, dataset_names, datasets_dir):
+def prepare_result(models, dataset_names, datasets_dir):
     res_map = {}
     for dataset_name in dataset_names:
         res_ds_map = {}
@@ -198,15 +198,19 @@ def plot_df(df):
     fig.show()
 
 
-def main(models, dataset_names, dataset_dir):
-    df = prepare_data(models, dataset_names, dataset_dir)
+def coderev_rec(models, dataset_names, dataset_dir):
+    df = prepare_result(models, dataset_names, dataset_dir)
 
     print(df.head())
     plot_df(df)
 
 
 if __name__ == "__main__":
-    main(
+    df_stats(
+        "../data-combined/",
+        dataset_names=None,
+    )
+    coderev_rec(
         models=[
             ("chrev", cHRev, lambda _: cHRev()),
             ("acrec", ACRec, lambda _: ACRec()),
