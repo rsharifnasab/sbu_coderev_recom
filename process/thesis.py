@@ -1,10 +1,10 @@
 from pprint import pprint
 
 import networkx as nx
-import numpy as np
 from batcore.modelbase import RecommenderBase
-from graph_stats import GraphStats, print_summary
-from utils import Timestamp, sort_by_frequency
+from utils import Timestamp, graph_demo, sort_by_frequency, sort_dict_by_value
+
+PRINT_GRAPH = False
 
 
 class Thesis1(RecommenderBase):
@@ -13,39 +13,23 @@ class Thesis1(RecommenderBase):
         self.reviewers = []
         self.G = nx.Graph()
 
-    def graph_demo(self):
-        ret = GraphStats(
-            name="author-reviewer",
-            G=self.G,
-            slow=True,
-        ).summary_generator(
-            funcs=[
-                "avg degree",
-                "density",
-                "diameter",
-                "effective diameter",
-                "avg clustering coeff",
-                "transitivity",
-                "avg shortest path len",
-                "assortativity",
-                # "betweenness centrality",
-                # "pagerank centrality",
-                # "degree centrality",
-                # "closeness centrality"
-                "plot degree distribution",
-                "draw graph",
-            ],
-            save_path=".",
-        )
-        print_summary(ret)
-
     def predict(self, pull, n=10):  # pyright: ignore [reportIncompatibleMethodOverride]
-        # return list(set(np.random.choice(self.reviewers) for _ in range(n)))
-
         owner = list(pull["owner"])[0]
-        connected_edges = list(self.G.edges(owner))
+        connected_edges = list(self.G.edges(owner, data=True))
 
-        ans = connected_edges[:1]  # TODO: [:n]
+        connected_people = {}
+        for edge in connected_edges:
+            src, dest, data = edge
+            print("data : ")
+            pprint(data)
+            connected_people[src] = data["value"]
+            connected_people[dest] = data["value"]
+
+        if connected_edges:
+            del connected_people[owner]
+
+        ans = sort_dict_by_value(connected_people, reverse=True)[:n]
+
         if len(connected_edges) < n:
             ans.extend(
                 sort_by_frequency(
@@ -54,9 +38,8 @@ class Thesis1(RecommenderBase):
                 )
             )
 
-        # pprint(pull)
-        # pprint(connected_edges)
-        # self.graph_demo()
+        if PRINT_GRAPH:
+            graph_demo(self.G)
 
         return ans
 
