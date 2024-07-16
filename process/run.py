@@ -6,11 +6,26 @@ from pprint import pprint
 import pandas as pd
 import plotly.graph_objects as go
 import plotly.io as pio
-from batcore.data import MRLoaderData, PullLoader, get_gerrit_dataset
+from batcore.data import (
+    CN,
+    WRC,
+    ACRec,
+    MRLoaderData,
+    PullLoader,
+    RevFinder,
+    RevRec,
+    Tie,
+    cHRev,
+    get_gerrit_dataset,
+    xFinder,
+)
 from batcore.tester import RecTester
 from naive1 import MostActiveRev, RandomRec, RandomWeightedRec
 from plotly.subplots import make_subplots
 from thesis import Thesis1
+
+_ = MostActiveRev, RandomRec, RandomWeightedRec
+_ = RevRec, ACRec, cHRev, CN, xFinder, RevFinder, Tie, WRC
 
 pd.options.mode.chained_assignment = None
 
@@ -40,11 +55,17 @@ MEASURES_ALL = [
 ]
 
 MEASURES = [
-    # "mrr",
+    "mrr",
+    #
     "acc@3",
     "rec@3",
     "prec@3",
     "f1@3",
+    #
+    "acc@10",
+    "rec@10",
+    "prec@10",
+    "f1@10",
     # "time",
 ]
 
@@ -171,7 +192,7 @@ def plot_df(df):
             "groupclick": "toggleitem"  # This enables filtering when clicking on legend items
         },
         xaxis={"tickangle": -45},  # Rotate x-axis labels for better readability
-        yaxis={"range": [0, 1]},  # Set y-axis range from 0 to 1
+        yaxis={"range": [0, 1.1]},  # Set y-axis range from 0 to 1
     )
 
     fig.show()
@@ -187,10 +208,10 @@ def main(models, dataset_names, dataset_dir):
 if __name__ == "__main__":
     main(
         models=[
-            # ("chrev", cHRev, lambda _: cHRev()),
-            # ("acrec", ACRec, lambda _: ACRec()),
-            # ("tie", Tie, lambda ds: Tie(ds.get_items2ids())),  # should be item list?
-            # ("revfinder", RevFinder, lambda ds: RevFinder(ds.get_items2ids())),
+            ("chrev", cHRev, lambda _: cHRev()),
+            ("acrec", ACRec, lambda _: ACRec()),
+            ("tie", Tie, lambda ds: Tie(ds.get_items2ids())),  # should be item list?
+            ("revfinder", RevFinder, lambda ds: RevFinder(ds.get_items2ids())),
             ####
             # ("xfinder", xFinder, lambda _: xFinder()),
             ####
@@ -198,16 +219,17 @@ if __name__ == "__main__":
             # ("cn", CN, lambda ds: CN(ds.get_items2ids())),
             # ("wrc", WRC, lambda ds: WRC(ds.get_items2ids())),
             ####
-            ("naive_rand", RandomRec, lambda _: RandomRec()),
+            # ("naive_rand", RandomRec, lambda _: RandomRec()),
             ("naive_wrand", RandomWeightedRec, lambda _: RandomWeightedRec()),
             ("naive_freq", MostActiveRev, lambda _: MostActiveRev()),
             ####
-            ("thesis", Thesis1, lambda _: Thesis1()),
+            ("thesis_extend", Thesis1, lambda _: Thesis1(True)),
+            ("thesis_noextend", Thesis1, lambda _: Thesis1(False)),
         ],
         dataset_names=[
             "aws",
-            "bazlets",
-            "k8s",
+            #  "bazlets",
+            #  "k8s",
         ],
         dataset_dir="../data-combined/",
     )

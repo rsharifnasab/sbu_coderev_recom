@@ -8,10 +8,18 @@ PRINT_GRAPH = False
 
 
 class Thesis1(RecommenderBase):
-    def __init__(self):
+    """
+    Method 1:
+    + create undirected weighted reviewer-author graph
+    + create reviewer-list based on neighbors with highest weight
+    + if the list is not long enough, extend with with weighted
+    """
+
+    def __init__(self, should_extend):
         super().__init__()
         self.reviewers = []
         self.G = nx.Graph()
+        self.should_extend = should_extend
 
     def predict(self, pull, n=10):  # pyright: ignore [reportIncompatibleMethodOverride]
         owner = list(pull["owner"])[0]
@@ -20,8 +28,6 @@ class Thesis1(RecommenderBase):
         connected_people = {}
         for edge in connected_edges:
             src, dest, data = edge
-            print("data : ")
-            pprint(data)
             connected_people[src] = data["value"]
             connected_people[dest] = data["value"]
 
@@ -30,13 +36,14 @@ class Thesis1(RecommenderBase):
 
         ans = sort_dict_by_value(connected_people, reverse=True)[:n]
 
-        if len(connected_edges) < n:
-            ans.extend(
-                sort_by_frequency(
-                    self.reviewers,
-                    n - len(ans),
+        if self.should_extend:
+            if len(connected_edges) < n:
+                ans.extend(
+                    sort_by_frequency(
+                        self.reviewers,
+                        n - len(ans),
+                    )
                 )
-            )
 
         if PRINT_GRAPH:
             graph_demo(self.G)
