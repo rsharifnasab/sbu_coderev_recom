@@ -97,7 +97,7 @@ class LazyWeightedRandomSelector:
             replace=False,  # no duplicate
         )
 
-    def get_most_frequest(self, n):
+    def get_most_frequent(self, n):
         if self.total_count == 0:
             return []
         if n <= 0:

@@ -18,7 +18,7 @@ class Thesis1(RecommenderBase):
     Method 1:
     + create undirected weighted reviewer-author graph
     + create reviewer-list based on neighbors with highest weight
-    + if the list is not long enough, extend with with weighted
+    + if the list is not long enough, extend with with most_frequent
     """
 
     def __init__(self, should_extend):
@@ -44,7 +44,7 @@ class Thesis1(RecommenderBase):
 
         if self.should_extend:
             if len(connected_edges) < n:
-                ans.extend(self.reviewers.get_most_frequest(n - len(ans)))
+                ans.extend(self.reviewers.get_most_frequent(n - len(ans)))
 
         if PRINT_GRAPH:
             graph_demo(self.G)

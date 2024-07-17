@@ -11,7 +11,7 @@ class MostActiveRev(RecommenderBase):
         self.reviewers = LazyWeightedRandomSelector()
 
     def predict(self, pull, n=10):  # pyright: ignore [reportIncompatibleMethodOverride]
-        return self.reviewers.get_most_frequest(n)
+        return self.reviewers.get_most_frequent(n)
 
     def fit(self, data):
         for event in data:
