@@ -95,11 +95,14 @@ def df_stats(dataset_dir, dataset_names=None):
 
 
 def plot_df_stats(dataset_dir, dataset_names):
-    res = df_stats(dataset_dir, dataset_names)
-    data = res
+    data = df_stats(dataset_dir, dataset_names)
 
     # Sort projects by event_count in descending order
-    projects = sorted(data.keys(), key=lambda x: data[x]["event_count"], reverse=True)
+    projects = sorted(
+        data.keys(),
+        key=lambda x: data[x]["event_count"],
+        reverse=False,
+    )
 
     # Now 'sorted_projects' contains the project names sorted by their event_count# Create subplots
     fig = make_subplots(
@@ -114,8 +117,6 @@ def plot_df_stats(dataset_dir, dataset_names):
             None,
         ),
     )
-
-    projects = list(data.keys())
 
     colors = px.colors.qualitative.Plotly
     color_map = {project: colors[i % len(colors)] for i, project in enumerate(projects)}
@@ -137,7 +138,12 @@ def plot_df_stats(dataset_dir, dataset_names):
             row=1,
             col=1,
         )
-    fig.update_yaxes(title_text="Authors", row=1, col=1, type="log")
+    fig.update_yaxes(
+        title_text="Authors",
+        row=1,
+        col=1,
+        type="log",
+    )
 
     ########## REVIEWERS ###########
     reviewers = [data[p]["reviewers"] for p in projects]
@@ -157,7 +163,13 @@ def plot_df_stats(dataset_dir, dataset_names):
             row=1,
             col=2,
         )
-    fig.update_yaxes(title_text="Reviewers", row=1, col=2, type="log")
+    fig.update_yaxes(
+        title_text="Reviewers",
+        row=1,
+        col=2,
+        type="log",
+        matches="y1",  # Sync y-axis with the first subplot
+    )
 
     ############## EVENT #############
     event_counts = [data[p]["event_count"] for p in projects]
@@ -178,7 +190,12 @@ def plot_df_stats(dataset_dir, dataset_names):
             row=2,
             col=1,
         )
-    fig.update_yaxes(title_text="Event Count", row=2, col=1, type="log")
+    fig.update_yaxes(
+        title_text="Event Count",
+        row=2,
+        col=1,
+        type="log",
+    )
 
     ########### FILES COUNT ##########
     file_counts = [data[p]["files"] for p in projects]
@@ -199,7 +216,12 @@ def plot_df_stats(dataset_dir, dataset_names):
             row=2,
             col=2,
         )
-    fig.update_yaxes(title_text="File Count", row=2, col=2, type="log")
+    fig.update_yaxes(
+        title_text="File Count",
+        row=2,
+        col=2,
+        type="log",
+    )
 
     ############# TIMELINE #########
     for project in projects:
@@ -217,14 +239,23 @@ def plot_df_stats(dataset_dir, dataset_names):
             row=3,
             col=1,
         )
-    fig.update_yaxes(title_text="Date", row=3, col=1)
+    fig.update_yaxes(
+        title_text="Date",
+        row=3,
+        col=1,
+        categoryorder="array",
+        categoryarray=projects[::-1],
+    )
 
-    # Update layout
     fig.update_layout(
         height=1200,
         width=1000,
         title_text="Project Statistics Dashboard",
+        # correct order
+        xaxis={
+            "categoryorder": "array",
+            "categoryarray": projects,
+        },
     )
 
-    # Show the plot
     pio.show(fig)
