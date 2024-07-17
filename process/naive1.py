@@ -1,42 +1,44 @@
+import random
+
 import numpy as np
 from batcore.modelbase import RecommenderBase
-from utils import sort_by_frequency
+from utils import LazyWeightedRandomSelector, sort_by_frequency
 
 
 class MostActiveRev(RecommenderBase):
     def __init__(self):
         super().__init__()
-        self.reviewers = []
+        self.reviewers = LazyWeightedRandomSelector()
 
     def predict(self, pull, n=10):  # pyright: ignore [reportIncompatibleMethodOverride]
-        return sort_by_frequency(self.reviewers, n)
+        return self.reviewers.get_most_frequest(n)
 
     def fit(self, data):
         for event in data:
-            self.reviewers.extend(event["reviewer"])
+            self.reviewers.add_items(event["reviewer"])
 
 
 class RandomWeightedRec(RecommenderBase):
     def __init__(self):
         super().__init__()
-        self.reviewers = []
+        self.reviewers = LazyWeightedRandomSelector()
 
     def predict(self, pull, n=10):  # pyright: ignore [reportIncompatibleMethodOverride]
-        return list(set(np.random.choice(self.reviewers) for _ in range(n)))
+        _ = pull
+        return self.reviewers.select_random_set(n)
 
     def fit(self, data):
         for event in data:
-            self.reviewers.extend(event["reviewer"])
+            self.reviewers.add_items(event["reviewer"])
 
 
 class RandomRec(RecommenderBase):
     def __init__(self):
         super().__init__()
-        self.reviewers = set()
+        self.reviewers: set[str] = set()
 
     def predict(self, pull, n=10):  # pyright: ignore [reportIncompatibleMethodOverride]
-        reviewer_list = list(self.reviewers)
-        return list(set(np.random.choice(reviewer_list) for _ in range(n)))
+        return random.sample(self.reviewers, n)
 
     def fit(self, data):
         for event in data:

@@ -2,7 +2,13 @@ from pprint import pprint
 
 import networkx as nx
 from batcore.modelbase import RecommenderBase
-from utils import Timestamp, graph_demo, sort_by_frequency, sort_dict_by_value
+from utils import (
+    LazyWeightedRandomSelector,
+    Timestamp,
+    graph_demo,
+    sort_by_frequency,
+    sort_dict_by_value,
+)
 
 PRINT_GRAPH = False
 
@@ -17,7 +23,7 @@ class Thesis1(RecommenderBase):
 
     def __init__(self, should_extend):
         super().__init__()
-        self.reviewers = []
+        self.reviewers = LazyWeightedRandomSelector()
         self.G = nx.Graph()
         self.should_extend = should_extend
 
@@ -38,12 +44,7 @@ class Thesis1(RecommenderBase):
 
         if self.should_extend:
             if len(connected_edges) < n:
-                ans.extend(
-                    sort_by_frequency(
-                        self.reviewers,
-                        n - len(ans),
-                    )
-                )
+                ans.extend(self.reviewers.get_most_frequest(n - len(ans)))
 
         if PRINT_GRAPH:
             graph_demo(self.G)
@@ -65,7 +66,7 @@ class Thesis1(RecommenderBase):
 
             reviewers = event["reviewer"]
 
-            self.reviewers.extend(reviewers)
+            self.reviewers.add_items(reviewers)
             for rev in reviewers:
                 for aut in authors:
                     self.author_reviewer_connect(aut, rev)

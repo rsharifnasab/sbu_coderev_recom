@@ -4,6 +4,7 @@ from hashlib import md5
 from pprint import pprint
 
 import pandas as pd
+import plotly.express as px
 import plotly.graph_objects as go
 import plotly.io as pio
 from batcore.data import MRLoaderData, PullLoader, get_gerrit_dataset

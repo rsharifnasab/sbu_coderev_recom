@@ -19,6 +19,7 @@ from batcore.data import (
 from naive1 import MostActiveRev, RandomRec, RandomWeightedRec
 from plotly.subplots import make_subplots
 from thesis import Thesis1
+from tqdm import tqdm
 
 _ = MostActiveRev, RandomRec, RandomWeightedRec
 _ = RevRec, ACRec, cHRev, CN, xFinder, RevFinder, Tie, WRC
@@ -85,7 +86,7 @@ def df_stats(dataset_dir, dataset_names=None):
             d for d in listdir(dataset_dir) if path.isdir(path.join(dataset_dir, d))
         ]
 
-    for ds in dataset_names:
+    for ds in tqdm(dataset_names):
         try:
             res[ds] = single_ds_stat(Thesis1, path.join(dataset_dir, ds))
         except ValueError as e:
@@ -185,7 +186,7 @@ def plot_df_stats(dataset_dir, dataset_names):
                 marker_color=color_map[project],
                 #
                 textposition="auto",
-                hovertemplate="%{text}: %{y:,}<extra></extra>",  # Format as integer
+                hovertemplate="%{text}: %{y:,}<extra></extra>",
             ),
             row=2,
             col=1,
@@ -208,10 +209,10 @@ def plot_df_stats(dataset_dir, dataset_names):
                 name=project,
                 legendgroup=project,
                 showlegend=False,
-                marker_color=color_map[project],  # Use consistent color
+                marker_color=color_map[project],
                 #
                 textposition="auto",
-                hovertemplate="%{text}: %{y:,}<extra></extra>",  # Format as integer
+                hovertemplate="%{text}: %{y:,}<extra></extra>",
             ),
             row=2,
             col=2,
@@ -232,9 +233,11 @@ def plot_df_stats(dataset_dir, dataset_names):
                 name=project,
                 legendgroup=project,
                 showlegend=True,
-                marker_color=color_map[project],  # Use consistent color
+                marker_color=color_map[project],
                 #
                 mode="lines+markers",
+                #
+                hovertemplate="%{y}: %{x}<extra></extra>",
             ),
             row=3,
             col=1,
