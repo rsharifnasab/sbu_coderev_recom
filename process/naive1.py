@@ -38,7 +38,10 @@ class RandomRec(RecommenderBase):
         self.reviewers: set[str] = set()
 
     def predict(self, pull, n=10):  # pyright: ignore [reportIncompatibleMethodOverride]
-        return random.sample(self.reviewers, n)
+        return random.sample(
+            self.reviewers,
+            min(n, len(self.reviewers)),
+        )
 
     def fit(self, data):
         for event in data:

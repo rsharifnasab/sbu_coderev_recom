@@ -3,6 +3,7 @@ import logging
 from batcore.data import CN, WRC, ACRec, RevFinder, RevRec, Tie, cHRev, xFinder
 from data_stats import plot_df_stats
 from naive1 import MostActiveRev, RandomRec, RandomWeightedRec
+from stat_test import stat_test
 from thesis import Thesis1
 
 from process import INVESTIGATE_RES_2, coderev_rec
@@ -14,21 +15,26 @@ logging.basicConfig(level=logging.WARN)
 
 
 MEASURES = [
-    # "mrr",
+    "mrr",
     #
-    # "acc@3",
-    # "rec@3",
-    # "prec@3",
+    "acc@3",
+    "rec@3",
+    "prec@3",
     "f1@3",
     #
-    # "acc@10",
-    # "rec@10",
-    # "prec@10",
+    "acc@5",
+    "rec@5",
+    "prec@5",
+    "f1@5",
+    #
+    "acc@10",
+    "rec@10",
+    "prec@10",
     "f1@10",
     # "time",
 ]
 
-INVESTIGATE_DS = False
+INVESTIGATE_DS = True
 
 
 def main():
@@ -37,22 +43,22 @@ def main():
         "gerrit-ci-scripts",
         "git-repo",
         "k8s-gerrit",
-        # "gitiles",
-        # "zoekt",
-        # "gwtorm",
-        # "aws-gerrit",
-        #  "bazlets",
-        #  "k8s",
+        "gitiles",
+        "zoekt",
+        "gwtorm",
     ]
+
     if INVESTIGATE_DS:
         plot_df_stats(
             "../data-all/",
             dataset_names=ds_names,
         )
-    coderev_rec(
+
+    return
+    df = coderev_rec(
         models=[
             ("chrev", cHRev, lambda _: cHRev()),
-            # ("acrec", ACRec, lambda _: ACRec()),
+            ("acrec", ACRec, lambda _: ACRec()),
             # ("tie", Tie, lambda ds: Tie(ds.get_items2ids())),  # should be item list?
             # ("revfinder", RevFinder, lambda ds: RevFinder(ds.get_items2ids())),
             ####
@@ -62,7 +68,7 @@ def main():
             # ("cn", CN, lambda ds: CN(ds.get_items2ids())),
             # ("wrc", WRC, lambda ds: WRC(ds.get_items2ids())),
             ####
-            # ("naive_rand", RandomRec, lambda _: RandomRec()),
+            ("naive_rand", RandomRec, lambda _: RandomRec()),
             ("naive_wrand", RandomWeightedRec, lambda _: RandomWeightedRec()),
             ("naive_freq", MostActiveRev, lambda _: MostActiveRev()),
             ####
@@ -73,6 +79,7 @@ def main():
         dataset_dir="../data-all/",
         measures=MEASURES,
     )
+    stat_test(df, measures=MEASURES)
 
 
 if __name__ == "__main__":

@@ -253,7 +253,7 @@ def plot_df_stats(dataset_dir, dataset_names):
     fig.update_layout(
         height=1200,
         width=1000,
-        title_text="Project Statistics Dashboard",
+        title_text="Dataset Statistics",
         # correct order
         xaxis={
             "categoryorder": "array",

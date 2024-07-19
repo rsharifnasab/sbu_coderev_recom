@@ -159,3 +159,5 @@ def coderev_rec(models, dataset_names, dataset_dir, measures):
 
     print(df.head())
     plot_df(df, measures)
+
+    return df
