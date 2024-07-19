@@ -20,3 +20,5 @@ python-louvain~=0.16
 matplotlib
 seaborn
 pyvis
+plotly
+kaleido
