@@ -72,6 +72,76 @@ class Thesis1(RecommenderBase):
                     self.author_reviewer_connect(aut, rev)
 
 
+###########################
+
+
+class Thesis2(RecommenderBase):
+    """
+    Method 2: TODO
+    + create undirected weighted reviewer-author graph
+    + create reviewer-list based on neighbors with highest weight
+    + if the list is not long enough, extend with with most_frequent
+    + fix cold start: when reviewer is not here, or when file is not here
+    """
+
+    def __init__(self, should_extend):
+        super().__init__()
+        self.reviewers = LazyWeightedRandomSelector()
+        self.G = nx.Graph()
+        self.should_extend = should_extend
+
+    def cold_start(self, pull):
+        files = list(pull["file"])
+        return []
+
+    def predict(self, pull, n=10):  # pyright: ignore [reportIncompatibleMethodOverride]
+        owner = list(pull["owner"])[0]
+        connected_edges = list(self.G.edges(owner, data=True))
+
+        connected_people = {}
+        for edge in connected_edges:
+            src, dest, data = edge
+            connected_people[src] = data["value"]
+            connected_people[dest] = data["value"]
+
+        if connected_edges:
+            del connected_people[owner]
+
+        ans = sort_dict_by_value(connected_people, reverse=True)[:n]
+
+        if not len(ans):
+            ans = self.cold_start(pull)
+
+        if self.should_extend:
+            if len(connected_edges) < n:
+                ans.extend(self.reviewers.get_most_frequent(n - len(ans)))
+
+        if PRINT_GRAPH:
+            graph_demo(self.G)
+
+        return ans
+
+    def author_reviewer_connect(self, author, reviewer):
+        if self.G.has_edge(author, reviewer):
+            current_value = self.G.edges[author, reviewer]["value"]
+            self.G.edges[author, reviewer]["value"] = current_value + 1
+        else:
+            self.G.add_edge(author, reviewer, value=1)
+
+    def fit(self, data):
+        for event in data:
+            authors = event["author"]
+            owners = event["owner"]
+            _ = owners
+
+            reviewers = event["reviewer"]
+
+            self.reviewers.add_items(reviewers)
+            for rev in reviewers:
+                for aut in authors:
+                    self.author_reviewer_connect(aut, rev)
+
+
 _ = {
     "author": {"Thomas Draebing:thomas.draebing@sap.com:"},
     "closed": Timestamp("2023-08-16 13:25:15"),

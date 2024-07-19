@@ -4,9 +4,9 @@ from batcore.data import CN, WRC, ACRec, RevFinder, RevRec, Tie, cHRev, xFinder
 from data_stats import plot_df_stats
 from naive1 import MostActiveRev, RandomRec, RandomWeightedRec
 from stat_test import stat_test
-from thesis import Thesis1
+from thesis import Thesis1, Thesis2
 
-from process import INVESTIGATE_RES_2, coderev_rec
+from process import coderev_rec
 
 _ = MostActiveRev, RandomRec, RandomWeightedRec
 _ = RevRec, ACRec, cHRev, CN, xFinder, RevFinder, Tie, WRC
@@ -17,9 +17,9 @@ logging.basicConfig(level=logging.WARN)
 MEASURES = [
     "mrr",
     #
-    "acc@3",
-    "rec@3",
-    "prec@3",
+    # "acc@3",
+    # "rec@3",
+    # "prec@3",
     "f1@3",
     #
     "acc@5",
@@ -27,9 +27,9 @@ MEASURES = [
     "prec@5",
     "f1@5",
     #
-    "acc@10",
-    "rec@10",
-    "prec@10",
+    # "acc@10",
+    # "rec@10",
+    # "prec@10",
     "f1@10",
     # "time",
 ]
@@ -53,8 +53,8 @@ def main():
             "../data-all/",
             dataset_names=ds_names,
         )
-
     return
+
     df = coderev_rec(
         models=[
             ("chrev", cHRev, lambda _: cHRev()),
@@ -72,8 +72,10 @@ def main():
             ("naive_wrand", RandomWeightedRec, lambda _: RandomWeightedRec()),
             ("naive_freq", MostActiveRev, lambda _: MostActiveRev()),
             ####
-            ("thesis_extend", Thesis1, lambda _: Thesis1(True)),
-            ("thesis_noextend", Thesis1, lambda _: Thesis1(False)),
+            ("thesis_1_extend", Thesis1, lambda _: Thesis1(True)),
+            ("thesis_1_noextend", Thesis1, lambda _: Thesis1(False)),
+            ("thesis_2_extend", Thesis2, lambda _: Thesis2(True)),
+            ("thesis_2_noextend", Thesis2, lambda _: Thesis2(False)),
         ],
         dataset_names=ds_names,
         dataset_dir="../data-all/",

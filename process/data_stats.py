@@ -110,11 +110,11 @@ def plot_df_stats(dataset_dir, dataset_names):
         rows=3,
         cols=2,
         subplot_titles=(
-            "Authors",
-            "Reviewers",
-            "Event Count",
-            "File Count",
-            "Project Timeline",
+            "توسعه‌دهندگان",
+            "بازبین‌ها",
+            "تعداد بازبینی‌ها",
+            "تعداد فایل‌ها",
+            "زمان‌بندی پروژه",
             None,
         ),
     )
@@ -140,7 +140,7 @@ def plot_df_stats(dataset_dir, dataset_names):
             col=1,
         )
     fig.update_yaxes(
-        title_text="Authors",
+        # title_text="Authors",
         row=1,
         col=1,
         type="log",
@@ -165,7 +165,7 @@ def plot_df_stats(dataset_dir, dataset_names):
             col=2,
         )
     fig.update_yaxes(
-        title_text="Reviewers",
+        # title_text="Reviewers",
         row=1,
         col=2,
         type="log",
@@ -192,7 +192,7 @@ def plot_df_stats(dataset_dir, dataset_names):
             col=1,
         )
     fig.update_yaxes(
-        title_text="Event Count",
+        # title_text="Event Count",
         row=2,
         col=1,
         type="log",
@@ -218,7 +218,7 @@ def plot_df_stats(dataset_dir, dataset_names):
             col=2,
         )
     fig.update_yaxes(
-        title_text="File Count",
+        # title_text="File Count",
         row=2,
         col=2,
         type="log",
@@ -243,7 +243,7 @@ def plot_df_stats(dataset_dir, dataset_names):
             col=1,
         )
     fig.update_yaxes(
-        title_text="Date",
+        # title_text="Date",
         row=3,
         col=1,
         categoryorder="array",
@@ -253,7 +253,7 @@ def plot_df_stats(dataset_dir, dataset_names):
     fig.update_layout(
         height=1200,
         width=1000,
-        title_text="Dataset Statistics",
+        # title_text="جزئیات اطلاعات پروژه‌ها",
         # correct order
         xaxis={
             "categoryorder": "array",
@@ -261,4 +261,5 @@ def plot_df_stats(dataset_dir, dataset_names):
         },
     )
 
-    pio.show(fig)
+    pio.kaleido.scope.mathjax = None
+    pio.write_image(fig, "data_stats.pdf")

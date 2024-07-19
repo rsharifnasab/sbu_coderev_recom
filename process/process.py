@@ -16,6 +16,7 @@ pd.options.mode.chained_assignment = None
 logging.basicConfig(level=logging.WARN)
 
 pio.templates.default = "plotly_white"
+pio.kaleido.scope.mathjax = None
 
 MEASURES_ALL = [
     "time",
@@ -150,7 +151,8 @@ def plot_df(df, measures):
         yaxis={"range": [0, 1.1]},  # Set y-axis range from 0 to 1
     )
 
-    fig.show()
+    # fig.show()
+    pio.write_image(fig, "result.pdf")
 
 
 def coderev_rec(models, dataset_names, dataset_dir, measures):
