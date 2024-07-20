@@ -1,16 +1,14 @@
-from pprint import pprint
 from typing import Dict, Optional
 
 import networkx as nx
 from batcore.modelbase import RecommenderBase
-from networkx import Graph
-from utils import (
+from lib.utils import (
     LazyWeightedRandomSelector,
     Timestamp,
     graph_demo,
-    sort_by_frequency,
     sort_dict_by_value,
 )
+from networkx import Graph
 
 PRINT_GRAPH = False
 

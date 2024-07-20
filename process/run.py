@@ -1,15 +1,17 @@
+#!/usr/bin/env python3
+
 import logging
 
 from batcore.data import CN, WRC, ACRec, RevFinder, RevRec, Tie, cHRev, xFinder
-from data_stats import plot_df_stats
+from lib.data_stats import plot_df_stats
+from lib.process import coderev_rec
+from lib.stat_test import stat_test
 from naive1 import MostActiveRev, RandomRec, RandomWeightedRec
-from stat_test import stat_test
 from thesis import Thesis1, Thesis2
-
-from process import coderev_rec
 
 _ = MostActiveRev, RandomRec, RandomWeightedRec
 _ = RevRec, ACRec, cHRev, CN, xFinder, RevFinder, Tie, WRC
+_ = Thesis1, Thesis2
 
 logging.basicConfig(level=logging.WARN)
 
@@ -39,7 +41,7 @@ INVESTIGATE_DS = not True
 
 def main():
     ds_names = [
-        #   "gerrit",
+        # "gerrit",
         #   "gerrit-ci-scripts",
         #     "git-repo",
         #      "k8s-gerrit",
@@ -81,6 +83,7 @@ def main():
         dataset_names=ds_names,
         dataset_dir="../data-all/",
         measures=MEASURES,
+        seperate_graphs=not False,
     )
     stat_test(df, measures=MEASURES)
 

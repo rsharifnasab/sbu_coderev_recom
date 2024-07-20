@@ -1,8 +1,7 @@
 import random
 
-import numpy as np
 from batcore.modelbase import RecommenderBase
-from utils import LazyWeightedRandomSelector, sort_by_frequency
+from lib.utils import LazyWeightedRandomSelector
 
 
 class MostActiveRev(RecommenderBase):
