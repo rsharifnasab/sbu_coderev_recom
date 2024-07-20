@@ -118,7 +118,7 @@ def get_color(model_name):
     return color_list[color_index]
 
 
-def plot_measure(df, measure_list):
+def plot_measure(df, measure_list, ds_name):
     fig = make_subplots(rows=1, cols=1)
 
     for model in df["Model"].unique():
@@ -158,8 +158,8 @@ def plot_measure(df, measure_list):
     )
 
     measure_str = "-".join(measure_list)
-    pio.write_image(fig, f"result-{measure_str}.pdf")
-    fig.show()
+    pio.write_image(fig, f"result-{ds_name}-{measure_str}.pdf")
+    # fig.show()
 
 
 def plot_df(df, all_measures, seperate_graphs):
@@ -171,7 +171,7 @@ def plot_df(df, all_measures, seperate_graphs):
         meta_measures = [all_measures]
 
     for measure_list in meta_measures:
-        plot_measure(df, measure_list)
+        plot_measure(df, measure_list, "ds")
 
 
 def graph_stats():
@@ -199,7 +199,7 @@ _ = """
 """
 
 
-def plot_combined_df(df, measures, seperate_graphs):
+def combine_df(df):
     models = df["Model"].unique()
     result = pd.DataFrame()
 
@@ -208,6 +208,11 @@ def plot_combined_df(df, measures, seperate_graphs):
         means = model_data.select_dtypes(include=[np.number]).mean()
         row = pd.Series({"Model": model, "Dataset": None, **means})
         result = result.append(row, ignore_index=True)
+    return result
+
+
+def plot_combined_df(df, measures, seperate_graphs):
+    result = combine_df(df)
 
     if seperate_graphs:
         meta_measures = []
@@ -217,16 +222,64 @@ def plot_combined_df(df, measures, seperate_graphs):
         meta_measures = [measures]
 
     for measure_list in meta_measures:
-        plot_measure(result, measure_list)
+        plot_measure(result, measure_list, "combined")
 
 
-def coderev_rec(models, dataset_names, dataset_dir, measures, seperate_graphs=False):
+################
+
+
+def create_incremental_plot(df, measure, k_values):
+    fig = go.Figure()
+
+    for model in df["Model"]:
+        y_values = [
+            df[df["Model"] == model][f"{measure}@{k}"].values[0] for k in k_values
+        ]
+        fig.add_trace(
+            go.Scatter(
+                x=[f"@{k}" for k in k_values],
+                y=y_values,
+                mode="lines+markers",
+                name=model,
+            )
+        )
+
+    fig.update_layout(
+        # title=f"مقایسه‌ی {measure.capitalize()} در مدل‌های مختلف",
+        # xaxis_title=f"{measure.capitalize()}@k",
+        yaxis_title=f"{measure.capitalize()}",
+        legend=dict(orientation="h", yanchor="bottom", y=1.02, xanchor="right", x=1),
+    )
+
+    return fig
+
+
+# Example usage
+k_values = [3, 5, 10]
+
+
+def plot_incremental_df(raw_df, measures, inc_measures):
+    df = combine_df(raw_df)
+    for measure in inc_measures:
+        fig = create_incremental_plot(df, measure, k_values)
+        fig.show()
+        pio.write_image(fig, f"result-inc-{measure}.pdf")
+
+
+def coderev_rec(
+    models, dataset_names, dataset_dir, measures, inc_measures, seperate_graphs=False
+):
     assert set(measures).issubset(set(MEASURES_ALL))
     df = prepare_result(models, dataset_names, dataset_dir, measures)
 
     print(df.head())
-    # plot_df(df, measures, seperate_graphs)
+    print("-" * 20)
+    plot_df(df, measures, seperate_graphs)
+    print("-" * 20)
     plot_combined_df(df, measures, seperate_graphs)
+
+    print("-" * 20)
+    plot_incremental_df(df, measures, inc_measures)
 
     graph_stats()
 

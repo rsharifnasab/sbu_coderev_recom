@@ -19,17 +19,18 @@ logging.basicConfig(level=logging.WARN)
 MEASURES = [
     "mrr",
     #
-    "acc@3",
+    "rec@1",
+    "prec@1",
+    "f1@1",
+    #
     "rec@3",
     "prec@3",
     "f1@3",
     #
-    "acc@5",
     "rec@5",
     "prec@5",
     "f1@5",
     #
-    "acc@10",
     "rec@10",
     "prec@10",
     "f1@10",
@@ -42,7 +43,7 @@ INVESTIGATE_DS = not True
 def main():
     ds_names = [
         # "gerrit",
-        #   "gerrit-ci-scripts",
+        # "gerrit-ci-scripts",
         # "git-repo",
         # "k8s-gerrit",
         "gitiles",
@@ -58,6 +59,11 @@ def main():
 
     df = coderev_rec(
         models=[
+            ####
+            # ("naive:random", RandomRec, lambda _: RandomRec()),
+            # ("naive:w_random", RandomWeightedRec, lambda _: RandomWeightedRec()),
+            # ("naive:freq", MostActiveRev, lambda _: MostActiveRev()),
+            # EE
             ("chrev", cHRev, lambda _: cHRev()),
             ("acrec", ACRec, lambda _: ACRec()),
             # ("tie", Tie, lambda ds: Tie(ds.get_items2ids())),  # should be item list?
@@ -71,10 +77,6 @@ def main():
             # ("cn", CN, lambda ds: CN(ds.get_items2ids())),
             # ("wrc", WRC, lambda ds: WRC(ds.get_items2ids())),
             ####
-            # ("naive_rand", RandomRec, lambda _: RandomRec()),
-            # ("naive_wrand", RandomWeightedRec, lambda _: RandomWeightedRec()),
-            # ("naive_freq", MostActiveRev, lambda _: MostActiveRev()),
-            ####
             ("thesis_noextend", Thesis1, lambda _: Thesis1(False)),
             ("thesis_extend", Thesis1, lambda _: Thesis1(True)),
             # ("thesis_2_extend", Thesis2, lambda _: Thesis2(True)),
@@ -83,7 +85,8 @@ def main():
         dataset_names=ds_names,
         dataset_dir="../data-all/",
         measures=MEASURES,
-        seperate_graphs=False,
+        inc_measures=["prec", "rec", "f1"],
+        seperate_graphs=not False,
     )
     stat_test(df, measures=MEASURES)
 
