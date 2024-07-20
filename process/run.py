@@ -43,10 +43,10 @@ def main():
     ds_names = [
         # "gerrit",
         #   "gerrit-ci-scripts",
-        #     "git-repo",
-        #      "k8s-gerrit",
-        #     "gitiles",
-        #    "zoekt",
+        # "git-repo",
+        # "k8s-gerrit",
+        "gitiles",
+        "zoekt",
         "gwtorm",
     ]
 
@@ -75,15 +75,15 @@ def main():
             # ("naive_wrand", RandomWeightedRec, lambda _: RandomWeightedRec()),
             # ("naive_freq", MostActiveRev, lambda _: MostActiveRev()),
             ####
-            ("thesis_extend", Thesis1, lambda _: Thesis1(True)),
             ("thesis_noextend", Thesis1, lambda _: Thesis1(False)),
+            ("thesis_extend", Thesis1, lambda _: Thesis1(True)),
             # ("thesis_2_extend", Thesis2, lambda _: Thesis2(True)),
             # ("thesis_2_noextend", Thesis2, lambda _: Thesis2(False)),
         ],
         dataset_names=ds_names,
         dataset_dir="../data-all/",
         measures=MEASURES,
-        seperate_graphs=not False,
+        seperate_graphs=False,
     )
     stat_test(df, measures=MEASURES)
 

@@ -1,5 +1,3 @@
-from pprint import pprint
-
 import numpy as np
 from scipy.stats import alpha, wilcoxon
 

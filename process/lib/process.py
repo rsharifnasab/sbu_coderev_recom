@@ -3,6 +3,7 @@ import time
 from hashlib import md5
 from pprint import pprint
 
+import numpy as np
 import pandas as pd
 import plotly.express as px
 import plotly.graph_objects as go
@@ -127,7 +128,10 @@ def plot_measure(df, measure_list):
         for i, measure in enumerate(measure_list):
             fig.add_trace(
                 go.Bar(
-                    x=[f"{dataset}<br>{measure}" for dataset in model_data["Dataset"]],
+                    x=[
+                        f"{dataset or ''}<br>{measure}"
+                        for dataset in model_data["Dataset"]
+                    ],
                     y=model_data[measure],
                     name=model,
                     marker_color=get_color(model),
@@ -178,16 +182,42 @@ def graph_stats():
         graph_demo(v, k)
 
 
-def plot_combined_df(df, all_measures, seperate_graphs):
+_ = """
+    -----------------------
+            Model  Dataset       mrr     acc@3     rec@3    prec@3      f1@3     acc@5     rec@5    prec@5      f1@5    acc@10    rec@10   prec@10     f1@10
+3   thesis_extend  gitiles  0.795375  0.906399  0.669303  0.484877  0.533999  0.944604  0.778433  0.354760  0.465605  0.966571  0.846247  0.208897  0.322772
+7   thesis_extend    zoekt  0.824217  0.905149  0.844851  0.341012  0.474306  0.945799  0.891373  0.230623  0.359552  0.970190  0.934282  0.127430  0.220365
+11  thesis_extend   gwtorm  0.869590  0.938182  0.766788  0.667879  0.691598  0.978182  0.877922  0.600424  0.675197  0.992727  0.945524  0.509548  0.597860
+"""
+
+_ = """
+             Model       mrr     acc@3     rec@3    prec@3      f1@3     acc@5     rec@5    prec@5      f1@5    acc@10    rec@10   prec@10     f1@10
+0            chrev  0.511677  0.571118  0.439716  0.418616  0.403207  0.582792  0.466911  0.414395  0.408644  0.582792  0.468719  0.414078  0.408940
+1            acrec  0.647862  0.720571  0.565273  0.406668  0.438842  0.742614  0.610560  0.371075  0.420108  0.745158  0.619918  0.359305  0.409462
+2  thesis_noextend  0.789086  0.850898  0.712974  0.495355  0.551288  0.879342  0.786473  0.416242  0.503290  0.892651  0.828787  0.347198  0.431893
+3    thesis_extend  0.832115  0.918107  0.759473  0.497662  0.566399  0.955877  0.848685  0.394796  0.499667  0.976496  0.909412  0.282296  0.380790
+"""
+
+
+def plot_combined_df(df, measures, seperate_graphs):
+    models = df["Model"].unique()
+    result = pd.DataFrame()
+
+    for model in models:
+        model_data = df[df["Model"] == model]
+        means = model_data.select_dtypes(include=[np.number]).mean()
+        row = pd.Series({"Model": model, "Dataset": None, **means})
+        result = result.append(row, ignore_index=True)
+
     if seperate_graphs:
         meta_measures = []
-        for measure in all_measures:
+        for measure in measures:
             meta_measures.append([measure])
     else:
-        meta_measures = [all_measures]
+        meta_measures = [measures]
 
     for measure_list in meta_measures:
-        plot_measure(df, measure_list)
+        plot_measure(result, measure_list)
 
 
 def coderev_rec(models, dataset_names, dataset_dir, measures, seperate_graphs=False):
@@ -195,8 +225,8 @@ def coderev_rec(models, dataset_names, dataset_dir, measures, seperate_graphs=Fa
     df = prepare_result(models, dataset_names, dataset_dir, measures)
 
     print(df.head())
-    plot_df(df, measures, seperate_graphs)
-    plot_combined_df(df, measures)
+    # plot_df(df, measures, seperate_graphs)
+    plot_combined_df(df, measures, seperate_graphs)
 
     graph_stats()
 
