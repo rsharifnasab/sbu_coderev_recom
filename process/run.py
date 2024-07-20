@@ -17,9 +17,9 @@ logging.basicConfig(level=logging.WARN)
 MEASURES = [
     "mrr",
     #
-    # "acc@3",
-    # "rec@3",
-    # "prec@3",
+    "acc@3",
+    "rec@3",
+    "prec@3",
     "f1@3",
     #
     "acc@5",
@@ -27,24 +27,24 @@ MEASURES = [
     "prec@5",
     "f1@5",
     #
-    # "acc@10",
-    # "rec@10",
-    # "prec@10",
+    "acc@10",
+    "rec@10",
+    "prec@10",
     "f1@10",
     # "time",
 ]
 
-INVESTIGATE_DS = True
+INVESTIGATE_DS = not True
 
 
 def main():
     ds_names = [
-        "gerrit",
-        "gerrit-ci-scripts",
-        "git-repo",
-        "k8s-gerrit",
-        "gitiles",
-        "zoekt",
+        #   "gerrit",
+        #   "gerrit-ci-scripts",
+        #     "git-repo",
+        #      "k8s-gerrit",
+        #     "gitiles",
+        #    "zoekt",
         "gwtorm",
     ]
 
@@ -53,29 +53,30 @@ def main():
             "../data-all/",
             dataset_names=ds_names,
         )
-    return
 
     df = coderev_rec(
         models=[
             ("chrev", cHRev, lambda _: cHRev()),
             ("acrec", ACRec, lambda _: ACRec()),
             # ("tie", Tie, lambda ds: Tie(ds.get_items2ids())),  # should be item list?
-            # ("revfinder", RevFinder, lambda ds: RevFinder(ds.get_items2ids())),
             ####
+            # very slow
+            # ("revfinder", RevFinder, lambda ds: RevFinder(ds.get_items2ids())),
+            # inaccurate
             # ("xfinder", xFinder, lambda _: xFinder()),
             ####
             # ("revrec", RevRec, lambda ds: RevRec(ds.get_items2ids())),
             # ("cn", CN, lambda ds: CN(ds.get_items2ids())),
             # ("wrc", WRC, lambda ds: WRC(ds.get_items2ids())),
             ####
-            ("naive_rand", RandomRec, lambda _: RandomRec()),
-            ("naive_wrand", RandomWeightedRec, lambda _: RandomWeightedRec()),
-            ("naive_freq", MostActiveRev, lambda _: MostActiveRev()),
+            # ("naive_rand", RandomRec, lambda _: RandomRec()),
+            # ("naive_wrand", RandomWeightedRec, lambda _: RandomWeightedRec()),
+            # ("naive_freq", MostActiveRev, lambda _: MostActiveRev()),
             ####
-            ("thesis_1_extend", Thesis1, lambda _: Thesis1(True)),
-            ("thesis_1_noextend", Thesis1, lambda _: Thesis1(False)),
-            ("thesis_2_extend", Thesis2, lambda _: Thesis2(True)),
-            ("thesis_2_noextend", Thesis2, lambda _: Thesis2(False)),
+            ("thesis_extend", Thesis1, lambda _: Thesis1(True)),
+            ("thesis_noextend", Thesis1, lambda _: Thesis1(False)),
+            # ("thesis_2_extend", Thesis2, lambda _: Thesis2(True)),
+            # ("thesis_2_noextend", Thesis2, lambda _: Thesis2(False)),
         ],
         dataset_names=ds_names,
         dataset_dir="../data-all/",

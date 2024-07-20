@@ -3,6 +3,7 @@
 # from concurrent.futures import ProcessPoolExecutor
 # from multiprocessing.pool import Pool
 import time
+from math import log2
 from random import choices as random_choices
 from statistics import mean
 from typing import Callable
@@ -189,38 +190,68 @@ class GraphStats:
         use_loglog = max(non_zero_degrees) >= loglog_threshold
 
         if use_loglog:
-            plt.loglog(non_zero_degrees, non_zero_freq, "bo-", markersize=4, linewidth=1)
-            plt.xscale('log')
-            plt.yscale('log')
-            plt.xlabel("Degree (log scale)")
-            plt.ylabel("Frequency (log scale)")
+            plt.loglog(
+                non_zero_degrees, non_zero_freq, "bo-", markersize=4, linewidth=1
+            )
+            plt.xscale("log")
+            plt.yscale("log")
+            plt.xlabel("دزجه (لگاریتمی)")
+            plt.ylabel("فرکانس (لگاریتمی)")
             plt.xticks([1, 10, 100, 1000], ["1", "10", "100", "1000"])
             plt.yticks([1, 10, 100, "1000"])
         else:
             plt.plot(non_zero_degrees, non_zero_freq, "bo-", markersize=4, linewidth=1)
-            plt.xlabel("Degree")
-            plt.ylabel("Frequency")
+            plt.xlabel("درجه")
+            plt.ylabel("فرکانس")
 
-        plt.title(f"Degree Distribution of {self.name}")
+        plt.title(f"توزیع درجه‌ی {self.name}")
         plt.grid(True, which="both", ls="-", alpha=0.2)
 
         addr = f"{save_dir}/{self.name}.png"
-        plt.savefig(addr, dpi=300, bbox_inches='tight')
+        plt.savefig(addr, dpi=300, bbox_inches="tight")
         plt.close()
 
         return addr
 
     def draw_graph(self, save_dir):
-        addr = f"{save_dir}/{self.name}.html"
+        addr = f"{save_dir}/{self.name}"
+
+        pos = nx.spring_layout(self.G, seed=42)
+        pos = nx.kamada_kawai_layout(self.G)
+        edge_weights = nx.get_edge_attributes(self.G, "value")
+        edges, weights = zip(*edge_weights.items())
+
+        # Draw the graph
+        plt.figure(figsize=(10, 8))
+        nx.draw_networkx_nodes(self.G, pos, node_color="skyblue", node_size=150)
+
+        # Draw the edges with varying widths
+        nx.draw_networkx_edges(
+            self.G,
+            pos,
+            edgelist=edges,
+            width=[log2(w) for w in weights],
+            edge_color="gray",
+        )
+
+        plt.axis("off")  # Hide the axis
+
+        # Save the figure as a PDF
+        plt.savefig(addr + ".pdf", format="pdf")
+
+        for node in self.G.nodes:
+            print(self.G.nodes[node])
+            self.G.nodes[node]["label"] = ""
+
         net = Network(notebook=True, cdn_resources="in_line")
         net.from_nx(self.G)
-        net.save_graph(addr)
+        for node in net.nodes:
+            node["label"] = ""
+        net.save_graph(addr + ".html")
         return addr
-
 
     def __str__(self):
         return f"{self.name} Graph (nodes: #{self.node_count()})"
-
 
     @staticmethod
     def apply(tup):
@@ -233,7 +264,7 @@ class GraphStats:
                 result += str(e)
         return result
 
-    def summary_generator(self, funcs = None, save_path="./"):
+    def summary_generator(self, funcs=None, save_path="./"):
         tasks = [
             (f"\n{self.name} Graph N:{self.node_count()} E:{self.edges_count()}",),
             ("avg degree:", self.average_degree),
@@ -255,10 +286,10 @@ class GraphStats:
             (
                 "draw graph",
                 lambda: self.draw_graph(save_path),
-            )
+            ),
         ]
 
-        effective_tasks = [ tasks[0] ]
+        effective_tasks = [tasks[0]]
 
         if funcs is None:
             effective_tasks = tasks

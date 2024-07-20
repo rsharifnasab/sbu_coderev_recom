@@ -6,9 +6,9 @@ import numpy as np
 from graph_stats import GraphStats, print_summary
 
 
-def graph_demo(g):
+def graph_demo(g, name):
     ret = GraphStats(
-        name="author-reviewer",
+        name=name,
         G=g,
         slow=False,
     ).summary_generator(

@@ -10,6 +10,8 @@ import plotly.io as pio
 from batcore.data import MRLoaderData, PullLoader, get_gerrit_dataset
 from batcore.tester import RecTester
 from plotly.subplots import make_subplots
+from thesis import last_graph
+from utils import graph_demo
 
 pd.options.mode.chained_assignment = None
 
@@ -115,44 +117,57 @@ def get_color(model_name):
     return color_list[color_index]
 
 
-def plot_df(df, measures):
-    fig = make_subplots(rows=1, cols=1)
+def plot_df(df, all_measures):
+    for measure in all_measures:
+        measures = [measure]
+        fig = make_subplots(rows=1, cols=1)
 
-    for model in df["Model"].unique():
-        model_data = df[df["Model"] == model]
+        for model in df["Model"].unique():
+            model_data = df[df["Model"] == model]
 
-        # For each measure/model, create a trace
-        for i, measure in enumerate(measures):
-            fig.add_trace(
-                go.Bar(
-                    x=[f"{dataset}<br>{measure}" for dataset in model_data["Dataset"]],
-                    y=model_data[measure],
-                    name=model,
-                    marker_color=get_color(model),
-                    opacity=0.7,
-                    showlegend=i == 0,  # Only show legend for the first measure
-                    legendgroup=model,  # Group traces by model
+            # For each measure/model, create a trace
+            for i, measure in enumerate(measures):
+                fig.add_trace(
+                    go.Bar(
+                        x=[
+                            f"{dataset}<br>{measure}"
+                            for dataset in model_data["Dataset"]
+                        ],
+                        y=model_data[measure],
+                        name=model,
+                        marker_color=get_color(model),
+                        opacity=0.7,
+                        showlegend=i == 0,  # Only show legend for the first measure
+                        legendgroup=model,  # Group traces by model
+                    )
                 )
-            )
 
-    fig.update_layout(
-        title="Recommender Models Metrics Comparison",
-        xaxis_title="Dataset and Measure",
-        yaxis_title="Score",
-        barmode="group",
-        height=600,
-        width=1200,
-        legend_title="Models",
-        font={"size": 12},
-        legend={
-            "groupclick": "toggleitem"  # This enables filtering when clicking on legend items
-        },
-        xaxis={"tickangle": -45},  # Rotate x-axis labels for better readability
-        yaxis={"range": [0, 1.1]},  # Set y-axis range from 0 to 1
-    )
+        fig.update_layout(
+            title="",
+            xaxis_title="مجموعه‌داده و معیار اندازه‌گیری",
+            yaxis_title="امتیاز",
+            barmode="group",
+            height=600,
+            width=1200,
+            legend_title="مدل",
+            font={"size": 12},
+            legend={
+                "groupclick": "toggleitem"  # This enables filtering when clicking on legend items
+            },
+            xaxis={"tickangle": -45},  # Rotate x-axis labels for better readability
+            yaxis={"range": [0, 1.1]},  # Set y-axis range from 0 to 1
+        )
 
-    # fig.show()
-    pio.write_image(fig, "result.pdf")
+        # fig.show()
+        pio.write_image(fig, f"result-{measure}.pdf")
+
+
+def graph_stats():
+    for k, v in last_graph.items():
+        if not v:
+            continue
+
+        graph_demo(v, k)
 
 
 def coderev_rec(models, dataset_names, dataset_dir, measures):
@@ -161,5 +176,7 @@ def coderev_rec(models, dataset_names, dataset_dir, measures):
 
     print(df.head())
     plot_df(df, measures)
+
+    graph_stats()
 
     return df

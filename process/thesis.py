@@ -1,7 +1,9 @@
 from pprint import pprint
+from typing import Dict, Optional
 
 import networkx as nx
 from batcore.modelbase import RecommenderBase
+from networkx import Graph
 from utils import (
     LazyWeightedRandomSelector,
     Timestamp,
@@ -11,6 +13,11 @@ from utils import (
 )
 
 PRINT_GRAPH = False
+
+last_graph: Dict[str, Optional[Graph]] = {
+    "thesis_extend": None,
+    "thesis_noextend": None,
+}
 
 
 class Thesis1(RecommenderBase):
@@ -46,8 +53,13 @@ class Thesis1(RecommenderBase):
             if len(connected_edges) < n:
                 ans.extend(self.reviewers.get_most_frequent(n - len(ans)))
 
+        if self.should_extend:
+            last_graph["thesis_extend"] = self.G
+        else:
+            last_graph["thesis_noextend"] = self.G
+
         if PRINT_GRAPH:
-            graph_demo(self.G)
+            graph_demo(self.G, "author-reviewer")
 
         return ans
 
