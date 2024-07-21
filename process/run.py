@@ -19,9 +19,9 @@ logging.basicConfig(level=logging.WARN)
 MEASURES = [
     "mrr",
     #
-    "rec@1",
-    "prec@1",
-    "f1@1",
+    # "rec@1",
+    # "prec@1",
+    # "f1@1",
     #
     "rec@3",
     "prec@3",
@@ -45,7 +45,7 @@ def main():
         # "gerrit",
         # "gerrit-ci-scripts",
         # "git-repo",
-        # "k8s-gerrit",
+        #        "k8s-gerrit",
         "gitiles",
         "zoekt",
         "gwtorm",

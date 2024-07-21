@@ -15,6 +15,8 @@ PRINT_GRAPH = False
 last_graph: Dict[str, Optional[Graph]] = {
     "thesis_extend": None,
     "thesis_noextend": None,
+    "thesis_2_extend": None,
+    "thesis_2_noextend": None,
 }
 
 
@@ -87,22 +89,15 @@ class Thesis1(RecommenderBase):
 
 class Thesis2(RecommenderBase):
     """
-    Method 2: TODO
-    + create undirected weighted reviewer-author graph
-    + create reviewer-list based on neighbors with highest weight
-    + if the list is not long enough, extend with with most_frequent
-    + fix cold start: when reviewer is not here, or when file is not here
+    Method 2:
+    + Directed graph
     """
 
     def __init__(self, should_extend):
         super().__init__()
         self.reviewers = LazyWeightedRandomSelector()
-        self.G = nx.Graph()
+        self.G = nx.DiGraph()
         self.should_extend = should_extend
-
-    def cold_start(self, pull):
-        files = list(pull["file"])
-        return []
 
     def predict(self, pull, n=10):  # pyright: ignore [reportIncompatibleMethodOverride]
         owner = list(pull["owner"])[0]
@@ -119,15 +114,17 @@ class Thesis2(RecommenderBase):
 
         ans = sort_dict_by_value(connected_people, reverse=True)[:n]
 
-        if not len(ans):
-            ans = self.cold_start(pull)
-
         if self.should_extend:
             if len(connected_edges) < n:
                 ans.extend(self.reviewers.get_most_frequent(n - len(ans)))
 
+        if self.should_extend:
+            last_graph["thesis_2_extend"] = self.G
+        else:
+            last_graph["thesis_2_noextend"] = self.G
+
         if PRINT_GRAPH:
-            graph_demo(self.G)
+            graph_demo(self.G, "author-reviewer")
 
         return ans
 
