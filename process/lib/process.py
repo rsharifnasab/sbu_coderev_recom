@@ -143,12 +143,12 @@ def plot_measure(df, measure_list, ds_name):
 
     fig.update_layout(
         title="",
-        xaxis_title="مجموعه‌داده و معیار اندازه‌گیری",
-        yaxis_title="امتیاز",
+        # xaxis_title="مجموعه‌داده و معیار اندازه‌گیری",
+        # yaxis_title="امتیاز",
         barmode="group",
         height=600,
         width=1200,
-        legend_title="مدل",
+        # legend_title="مدل",
         font={"size": 12},
         legend={
             "groupclick": "toggleitem"  # This enables filtering when clicking on legend items
@@ -247,15 +247,14 @@ def create_incremental_plot(df, measure, k_values):
     fig.update_layout(
         # title=f"مقایسه‌ی {measure.capitalize()} در مدل‌های مختلف",
         # xaxis_title=f"{measure.capitalize()}@k",
-        yaxis_title=f"{measure.capitalize()}",
+        # yaxis_title=f"{measure.capitalize()}",
         legend=dict(orientation="h", yanchor="bottom", y=1.02, xanchor="right", x=1),
     )
 
     return fig
 
 
-# Example usage
-k_values = [3, 5, 10]
+k_values = [1, 3, 5, 10]
 
 
 def plot_incremental_df(raw_df, measures, inc_measures):

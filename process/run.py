@@ -19,9 +19,9 @@ logging.basicConfig(level=logging.WARN)
 MEASURES = [
     "mrr",
     #
-    # "rec@1",
-    # "prec@1",
-    # "f1@1",
+    "rec@1",
+    "prec@1",
+    "f1@1",
     #
     "rec@3",
     "prec@3",
@@ -42,10 +42,10 @@ INVESTIGATE_DS = not True
 
 def main():
     ds_names = [
-        # "gerrit",
-        # "gerrit-ci-scripts",
-        # "git-repo",
-        #        "k8s-gerrit",
+        "gerrit",
+        "gerrit-ci-scripts",
+        "git-repo",
+        "k8s-gerrit",
         "gitiles",
         "zoekt",
         "gwtorm",
@@ -60,10 +60,10 @@ def main():
     df = coderev_rec(
         models=[
             ####
-            # ("naive:random", RandomRec, lambda _: RandomRec()),
-            # ("naive:w_random", RandomWeightedRec, lambda _: RandomWeightedRec()),
-            # ("naive:freq", MostActiveRev, lambda _: MostActiveRev()),
-            # EE
+            ("naive:random", RandomRec, lambda _: RandomRec()),
+            ("naive:w_random", RandomWeightedRec, lambda _: RandomWeightedRec()),
+            ("naive:freq", MostActiveRev, lambda _: MostActiveRev()),
+            #
             ("chrev", cHRev, lambda _: cHRev()),
             ("acrec", ACRec, lambda _: ACRec()),
             # ("tie", Tie, lambda ds: Tie(ds.get_items2ids())),  # should be item list?
@@ -77,8 +77,8 @@ def main():
             # ("cn", CN, lambda ds: CN(ds.get_items2ids())),
             # ("wrc", WRC, lambda ds: WRC(ds.get_items2ids())),
             ####
-            ("thesis_noextend", Thesis1, lambda _: Thesis1(False)),
-            ("thesis_extend", Thesis1, lambda _: Thesis1(True)),
+            ("proposed_method", Thesis1, lambda _: Thesis1(False)),
+            ("evolved_proposed_method", Thesis1, lambda _: Thesis1(True)),
             # ("thesis_2_extend", Thesis2, lambda _: Thesis2(True)),
             # ("thesis_2_noextend", Thesis2, lambda _: Thesis2(False)),
         ],
@@ -86,7 +86,7 @@ def main():
         dataset_dir="../data-all/",
         measures=MEASURES,
         inc_measures=["prec", "rec", "f1"],
-        seperate_graphs=not False,
+        seperate_graphs=True,
     )
     stat_test(df, measures=MEASURES)
 
