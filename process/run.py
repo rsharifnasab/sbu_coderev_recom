@@ -17,6 +17,7 @@ logging.basicConfig(level=logging.WARN)
 
 
 MEASURES = [
+    "time",
     "mrr",
     #
     "rec@1",
@@ -34,7 +35,6 @@ MEASURES = [
     "rec@10",
     "prec@10",
     "f1@10",
-    # "time",
 ]
 
 INVESTIGATE_DS = not True
@@ -60,9 +60,9 @@ def main():
     df = coderev_rec(
         models=[
             ####
-            ("naive:random", RandomRec, lambda _: RandomRec()),
-            ("naive:w_random", RandomWeightedRec, lambda _: RandomWeightedRec()),
-            ("naive:freq", MostActiveRev, lambda _: MostActiveRev()),
+            # ("naive:random", RandomRec, lambda _: RandomRec()),
+            # ("naive:w_random", RandomWeightedRec, lambda _: RandomWeightedRec()),
+            # ("naive:freq", MostActiveRev, lambda _: MostActiveRev()),
             #
             ("chrev", cHRev, lambda _: cHRev()),
             ("acrec", ACRec, lambda _: ACRec()),
@@ -78,8 +78,8 @@ def main():
             # ("wrc", WRC, lambda ds: WRC(ds.get_items2ids())),
             ####
             ("proposed_method", Thesis1, lambda _: Thesis1(False)),
-            ("evolved_proposed_method", Thesis1, lambda _: Thesis1(True)),
-            # ("thesis_2_extend", Thesis2, lambda _: Thesis2(True)),
+            # ("evolved_proposed_method", Thesis1, lambda _: Thesis1(True)),
+            ("directed_graph", Thesis2, lambda _: Thesis2(True)),
             # ("thesis_2_noextend", Thesis2, lambda _: Thesis2(False)),
         ],
         dataset_names=ds_names,

@@ -141,6 +141,8 @@ def plot_measure(df, measure_list, ds_name):
                 )
             )
 
+    max_y = None if "time" in measure_list else 1.1
+    y_axis = "log" if "time" in measure_list else None
     fig.update_layout(
         title="",
         # xaxis_title="مجموعه‌داده و معیار اندازه‌گیری",
@@ -154,7 +156,7 @@ def plot_measure(df, measure_list, ds_name):
             "groupclick": "toggleitem"  # This enables filtering when clicking on legend items
         },
         xaxis={"tickangle": -45},  # Rotate x-axis labels for better readability
-        yaxis={"range": [0, 1.1]},  # Set y-axis range from 0 to 1
+        yaxis={"range": [0, max_y], "type": y_axis},  # Set y-axis range from 0 to 1
     )
 
     measure_str = "-".join(measure_list)
@@ -217,7 +219,8 @@ def plot_combined_df(df, measures, seperate_graphs):
     if seperate_graphs:
         meta_measures = []
         for measure in measures:
-            meta_measures.append([measure])
+            if measure != "time":
+                meta_measures.append([measure])
     else:
         meta_measures = [measures]
 
