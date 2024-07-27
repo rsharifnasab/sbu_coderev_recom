@@ -195,16 +195,16 @@ class GraphStats:
             )
             plt.xscale("log")
             plt.yscale("log")
-            plt.xlabel("دزجه (لگاریتمی)")
-            plt.ylabel("فرکانس (لگاریتمی)")
+            #   plt.xlabel("دزجه (لگاریتمی)")
+            #   plt.ylabel("فرکانس (لگاریتمی)")
             plt.xticks([1, 10, 100, 1000], ["1", "10", "100", "1000"])
             plt.yticks([1, 10, 100, 1000], ["1", "10", "100", "1000"])
         else:
             plt.plot(non_zero_degrees, non_zero_freq, "bo-", markersize=4, linewidth=1)
-            plt.xlabel("درجه")
-            plt.ylabel("فرکانس")
+            # plt.xlabel("درجه")
+            # plt.ylabel("فرکانس")
 
-        plt.title(f"توزیع درجه‌ی {self.name}")
+        # plt.title(f"توزیع درجه‌ی {self.name}")
         plt.grid(True, which="both", ls="-", alpha=0.2)
 
         addr = f"{save_dir}/{self.name}.png"

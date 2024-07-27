@@ -1,4 +1,5 @@
 from os import listdir, path
+from pprint import pprint
 
 import plotly.express as px
 import plotly.graph_objects as go
@@ -36,7 +37,10 @@ def single_ds_stat(model_cls, data_dir):
     )
 
     dataset = get_gerrit_dataset(
-        data, max_file=20, model_cls=model_cls, owner_policy="author_no_na"
+        data,
+        max_file=20,
+        model_cls=model_cls,
+        owner_policy="author_no_na",
     )
 
     data_iterator = PullLoader(dataset)
@@ -51,19 +55,20 @@ def single_ds_stat(model_cls, data_dir):
         for datas2 in datas:
             if not isinstance(datas2, list):
                 datas2 = [datas2]
-                for data in datas2:
-                    authors.update(data["author"])
+            for data in datas2:
+                authors.update(data["author"])
 
-                    files.update(data["file"])
+                files.update(data["file"])
 
-                    reviewers.update(data["reviewer"])
+                reviewers.update(data["reviewer"])
 
-                    dates.add(data["date"])
+                dates.add(data["date"])
 
-                    event_count += 1
+                event_count += 1
+                # pprint(data["date"])
 
-    # TODO
-    parsed_dates = [timestamp for timestamp in dates]
+    parsed_dates = [timestamp.to_pydatetime() for timestamp in dates]
+    # print(max(parsed_dates))
 
     res = {
         "data_dir": data_dir,
